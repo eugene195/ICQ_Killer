@@ -2,6 +2,7 @@ package entities;
 
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -15,17 +16,26 @@ import Protocol.BaseProto;
 public class UserEntity {
 
     private final String URL = "/user";
-    private String username;
+    private Boolean successLogin = false;
+    private String nickname;
+    private JSONArray clients = new JSONArray();
 
-    public UserEntity create(String name, BaseProto protocol) {
-        ArrayList <BasicNameValuePair> paramList = new ArrayList<>();
-//TODO protocol change
-//        String url = URL + "/login";
-        String url ="/login";
-        paramList.add(new BasicNameValuePair("nickname", name));
-        JSONObject json = protocol.create(paramList, url);
-        String str = json.toString();
-        return null;
+    public void create(String name, BaseProto protocol) {
+        try {
+            ArrayList <BasicNameValuePair> paramList = new ArrayList<>();
+    //TODO protocol change
+    //        String url = URL + "/login";
+            String url ="/login";
+            paramList.add(new BasicNameValuePair("nickname", name));
+            JSONObject json = protocol.create(paramList, url);
+            if (json.getBoolean("result")) {
+                clients = json.getJSONArray("clients");
+                nickname = name;
+                successLogin = true;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -48,8 +58,8 @@ public class UserEntity {
 
     }
 
-    private void parse (JSONObject json) {
-
+    private Boolean isLoginSuccess () {
+        return successLogin;
     }
 
 }
