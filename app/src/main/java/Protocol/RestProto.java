@@ -1,7 +1,16 @@
 package Protocol;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -15,22 +24,36 @@ import entities.BaseEntity;
 public class RestProto implements BaseProto {
 
 //    private final String serverUrl = getResources().getString(R.string.server_url);
-    private final String serverUrl = "http://127.0.0.1:5005";
+    private final String serverUrl = "http://immense-bayou-7299.herokuapp.com";
+    private final HttpClient httpclient = new DefaultHttpClient();
+
+    private HttpPost createPost (ArrayList <BasicNameValuePair> params, String url) {
+        HttpPost httppost = new HttpPost(url);
+        try {
+            httppost.setEntity(new UrlEncodedFormEntity(params));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return httppost;
+    }
+
+//    TODO check status codes
+    private void validateResponse (HttpResponse response) {
+
+    }
 
     @Override
-    public JSONObject create(HashMap<String, String> params) {
+    public JSONObject create(ArrayList <BasicNameValuePair> params, String url) {
         StringBuilder builder = new StringBuilder();
-        builder.append(serverUrl);
-        String url = params.get("url");
-        params.remove("url");
-        builder.append(url).append('?');
-        for (String paramKey: params.keySet()) {
-            String param = params.get(paramKey);
-            builder.append(paramKey).append('=').append(param).append('&');
-            params.remove(paramKey);
+        builder.append(serverUrl).append(url);
+        HttpPost httppost = createPost(params, builder.toString());
+        HttpResponse response = null;
+        try {
+            response = httpclient.execute(httppost);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        builder.deleteCharAt(builder.length() - 1);
-        return HttpRequester.getResponseByUrl(builder.toString());
+        return HttpRequester.responseToObject(response);
     }
 
     @Override

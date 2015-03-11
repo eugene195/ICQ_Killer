@@ -40,7 +40,7 @@ public class MainActivity extends Activity {
         private static final String progressBarMsg = "Searching for available name";
         public GetUserName() {}
         protected void onPreExecute() {
-            ProgressBarViewer.view(MainActivity.this, progressBarMsg);
+//            ProgressBarViewer.view(MainActivity.this, progressBarMsg);
         }
         protected String doInBackground(String ... urls) {
             String username = urls[0];
@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
             return "";
         }
         protected void onPostExecute(String result) {
-            ProgressBarViewer.hide();
+//            ProgressBarViewer.hide();
         }
     }
 

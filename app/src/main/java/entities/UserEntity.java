@@ -1,5 +1,7 @@
 package entities;
 
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -16,10 +18,13 @@ public class UserEntity {
     private String username;
 
     public UserEntity create(String name, BaseProto protocol) {
-        HashMap<String, String> map = new HashMap<>();
-        map.put("url", URL + "/login");
-        map.put("nickname", name);
-        JSONObject json = protocol.create(map);
+        ArrayList <BasicNameValuePair> paramList = new ArrayList<>();
+//TODO protocol change
+//        String url = URL + "/login";
+        String url ="/login";
+        paramList.add(new BasicNameValuePair("nickname", name));
+        JSONObject json = protocol.create(paramList, url);
+        String str = json.toString();
         return null;
     }
 

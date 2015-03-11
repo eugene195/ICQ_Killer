@@ -1,5 +1,7 @@
 package Protocol;
 
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -12,7 +14,7 @@ import entities.BaseEntity;
  */
 public interface BaseProto {
 
-    public JSONObject create(HashMap<String, String> params);
+    public JSONObject create(ArrayList<BasicNameValuePair> params, String url);
 
 
     public BaseEntity read();
