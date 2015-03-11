@@ -1,5 +1,7 @@
 package entities;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -15,9 +17,9 @@ public class UserEntity {
 
     public UserEntity create(String name, BaseProto protocol) {
         HashMap<String, String> map = new HashMap<>();
-        map.put("url", URL);
+        map.put("url", URL + "/login");
         map.put("nickname", name);
-        protocol.create(map);
+        JSONObject json = protocol.create(map);
         return null;
     }
 
@@ -40,4 +42,9 @@ public class UserEntity {
     public void delete() {
 
     }
+
+    private void parse (JSONObject json) {
+
+    }
+
 }

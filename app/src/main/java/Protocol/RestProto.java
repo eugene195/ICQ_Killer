@@ -15,7 +15,7 @@ import entities.BaseEntity;
 public class RestProto implements BaseProto {
 
 //    private final String serverUrl = getResources().getString(R.string.server_url);
-    private final String serverUrl = "localhost";
+    private final String serverUrl = "http://127.0.0.1:5005";
 
     @Override
     public JSONObject create(HashMap<String, String> params) {
