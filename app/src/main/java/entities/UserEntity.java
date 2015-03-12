@@ -58,7 +58,7 @@ public class UserEntity {
 
     }
 
-    private Boolean isLoginSuccess () {
+    public Boolean isLoginSuccess () {
         return successLogin;
     }
 

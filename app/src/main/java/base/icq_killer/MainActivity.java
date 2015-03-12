@@ -42,7 +42,7 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 EditText nameField = (EditText) findViewById(R.id.loginField);
                 new GetUserName().execute(nameField.getText().toString());
-                new ConnectWebSocket().execute(wsUrl);
+//                new ConnectWebSocket().execute(wsUrl);
             }
         });
     }
@@ -55,11 +55,19 @@ public class MainActivity extends Activity {
         }
         protected String doInBackground(String ... urls) {
             String username = urls[0];
-            user.create(username, protocol);
+
+            // Todo кинуть исключение, если не создался пользователь
+            try {
+                user.create(username, protocol);
+            } catch (Exception exc) {
+                exc.printStackTrace();
+            }
             return "";
         }
         protected void onPostExecute(String result) {
             ProgressBarViewer.hide();
+//            if (user.isLoginSuccess())
+
         }
     }
 
@@ -81,27 +89,7 @@ public class MainActivity extends Activity {
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
+    // TODO
 
     private void connectWebSocket(String url) {
         URI uri;
