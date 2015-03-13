@@ -1,4 +1,4 @@
-package base.icq_killer;
+package utils;
 
 import android.app.Activity;
 import android.app.ProgressDialog;

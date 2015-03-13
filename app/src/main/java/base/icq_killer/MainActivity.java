@@ -1,26 +1,30 @@
 package base.icq_killer;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONArray;
+import org.json.JSONException;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
-import Protocol.BaseProto;
-import Protocol.RestProto;
+import protocol.BaseProto;
+import protocol.RestProto;
 import entities.UserEntity;
+import utils.ProgressBarViewer;
 
 
 public class MainActivity extends Activity {
@@ -41,7 +45,15 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 EditText nameField = (EditText) findViewById(R.id.loginField);
-                new GetUserName().execute(nameField.getText().toString());
+
+
+                try {
+                    startActivity(clientListIntent());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+//                new GetUserName().execute(nameField.getText().toString());
 //                new ConnectWebSocket().execute(wsUrl);
             }
         });
@@ -86,6 +98,26 @@ public class MainActivity extends Activity {
             ProgressBarViewer.hide();
             sendMessage();
         }
+    }
+
+    private Intent clientListIntent () throws JSONException {
+        Intent intent = new Intent(getApplicationContext(),
+                ClientActivity.class);
+//        intent.putExtra(ClientActivity.MY_NAME, user.getName());
+//        TODO
+        intent.putExtra(ClientActivity.MY_NAME, "Vasya");
+        ArrayList<String> listdata = new ArrayList<>();
+        JSONArray array = user.getClients();
+        if (array != null) {
+            for (int i=0; i < user.getClients().length(); i++){
+                listdata.add(array.get(i).toString());
+            }
+        }
+        listdata.add("Max");
+        listdata.add("Tony");
+        listdata.add("Paul");
+        intent.putExtra(ClientActivity.CLIENT_LIST, listdata);
+        return intent;
     }
 
 

@@ -6,9 +6,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
-import Protocol.BaseProto;
+import protocol.BaseProto;
 
 /**
  * Created by eugene on 11.03.15.
@@ -57,6 +56,10 @@ public class UserEntity {
     public void delete() {
 
     }
+
+    public String getName () { return nickname; }
+
+    public JSONArray getClients () { return clients; }
 
     public Boolean isLoginSuccess () {
         return successLogin;

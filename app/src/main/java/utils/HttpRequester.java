@@ -1,6 +1,4 @@
-package Protocol;
-
-import android.util.Log;
+package utils;
 
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
