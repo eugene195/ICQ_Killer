@@ -1,10 +1,11 @@
 package base.icq_killer;
 
 import android.content.Intent;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import org.json.JSONException;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import base.icq_killer.fragments.ChatFragment;
@@ -22,6 +23,13 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            //Restore the fragment's instance
+//            clientArray = getSupportFragmentManager().getFragment(
+//                    savedInstanceState, "mContent");
+        }
+
         Intent intent = getIntent();
         try {
             fetchParams(intent);
@@ -55,5 +63,20 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
             clientArray = new String[clients.size()];
             clients.toArray(clientArray);
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable(CLIENT_LIST, clientArray);
+        outState.putString(MY_NAME, nickname);
+
+        ChatFragment fragment = (ChatFragment) getFragmentManager()
+                .findFragmentById(R.id.chatFragment);
+        getFragmentManager().putFragment(outState, "ChatFragment", fragment);
+
+        ClientListFragment clientListFragment = (ClientListFragment) getFragmentManager()
+                .findFragmentById(R.id.clientFragment);
+        getFragmentManager().putFragment(outState, "ClientListFragment", clientListFragment);
     }
 }

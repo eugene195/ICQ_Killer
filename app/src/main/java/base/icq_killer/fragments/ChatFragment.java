@@ -1,7 +1,9 @@
 package base.icq_killer.fragments;
 
-import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Bundle;
+
+
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,6 +39,12 @@ public class ChatFragment extends Fragment {
     @Override
     public void onActivityCreated (Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            destName = savedInstanceState.getString(DESTINATION);
+            myName = savedInstanceState.getString(NICKNAME);
+        }
+
         setNames(destName);
         recreateAdapter();
         msgBox = (EditText) getView().findViewById(R.id.messageBox);
@@ -76,11 +84,6 @@ public class ChatFragment extends Fragment {
         }
     }
 
-    public void loadMsgHistory () {
-//        TODO DBQuery
-//        addItems();
-    }
-
     public void changeChatroom (String dest) {
         if (!dest.equals(destName)) {
             recreateAdapter();
@@ -92,17 +95,16 @@ public class ChatFragment extends Fragment {
         adapter.add(msg);
     }
 
-
     private void recreateAdapter () {
         listView = (ListView) getView().findViewById(R.id.chatView);
         adapter = new MessageArrayAdapter(getActivity(), R.layout.listitem_chat);
         listView.setAdapter(adapter);
     }
 
-    private void addItems() {
-        Message msg = new Message();
-        msg.create("Max", "Vasya", "Hello, Vasya");
-        adapter.add(msg);
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(DESTINATION, destName);
+        outState.putString(NICKNAME, myName);
     }
-
 }

@@ -39,6 +39,10 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            nickname = savedInstanceState.getString(MY_NAME);
+            clientArray = (String []) savedInstanceState.getSerializable(CLIENT_LIST);
+        }
         clientAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
     }
@@ -93,5 +97,12 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
             throw new ClassCastException(activity.toString()
                     + " must implement OnItemSelectedListener");
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable(CLIENT_LIST, clientArray);
+        outState.putString(MY_NAME, nickname);
     }
 }
