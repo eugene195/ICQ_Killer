@@ -19,22 +19,22 @@ public class UserEntity {
     private String nickname;
     private JSONArray clients = new JSONArray();
 
-    public void create(String name, BaseProto protocol) {
+    public boolean create(String name, BaseProto protocol) {
         try {
             ArrayList <BasicNameValuePair> paramList = new ArrayList<>();
-    //TODO protocol change
-    //        String url = URL + "/login";
             String url ="/login";
             paramList.add(new BasicNameValuePair("nickname", name));
             JSONObject json = protocol.create(paramList, url);
-            if (json.getBoolean("result")) {
+//            TODO everything will fail if proto changes
+            if (json.getString("status").equals("OK")) {
                 clients = json.getJSONArray("clients");
                 nickname = name;
-                successLogin = true;
+                return successLogin = true;
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
 

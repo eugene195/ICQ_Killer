@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -45,32 +46,24 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 EditText nameField = (EditText) findViewById(R.id.loginField);
-
-
-                try {
-                    startActivity(clientListIntent());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
 //                new GetUserName().execute(nameField.getText().toString());
-//                new ConnectWebSocket().execute(wsUrl);
+                new ConnectWebSocket().execute(wsUrl);
             }
         });
     }
 
     private class GetUserName extends AsyncTask<String, Void, String> {
         private static final String progressBarMsg = "Searching for available name";
+        private static final String errorMsg = "User already exists";
+        private boolean success = false;
         public GetUserName() {}
         protected void onPreExecute() {
             ProgressBarViewer.view(MainActivity.this, progressBarMsg);
         }
         protected String doInBackground(String ... urls) {
             String username = urls[0];
-
-            // Todo кинуть исключение, если не создался пользователь
             try {
-                user.create(username, protocol);
+                success = user.create(username, protocol);
             } catch (Exception exc) {
                 exc.printStackTrace();
             }
@@ -78,8 +71,15 @@ public class MainActivity extends Activity {
         }
         protected void onPostExecute(String result) {
             ProgressBarViewer.hide();
-//            if (user.isLoginSuccess())
-
+            if (success)
+                try {
+                    startActivity(clientListIntent());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            else {
+                ShowMessage(errorMsg);
+            }
         }
     }
 
@@ -96,16 +96,13 @@ public class MainActivity extends Activity {
         }
         protected void onPostExecute(String result) {
             ProgressBarViewer.hide();
-            sendMessage();
         }
     }
 
     private Intent clientListIntent () throws JSONException {
         Intent intent = new Intent(getApplicationContext(),
                 ClientActivity.class);
-//        intent.putExtra(ClientActivity.MY_NAME, user.getName());
-//        TODO
-        intent.putExtra(ClientActivity.MY_NAME, "Vasya");
+        intent.putExtra(ClientActivity.MY_NAME, user.getName());
         ArrayList<String> listdata = new ArrayList<>();
         JSONArray array = user.getClients();
         if (array != null) {
@@ -113,11 +110,12 @@ public class MainActivity extends Activity {
                 listdata.add(array.get(i).toString());
             }
         }
-        listdata.add("Max");
-        listdata.add("Tony");
-        listdata.add("Paul");
         intent.putExtra(ClientActivity.CLIENT_LIST, listdata);
         return intent;
+    }
+
+    private void ShowMessage(String message) {
+        Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
     }
 
 
