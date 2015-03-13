@@ -3,8 +3,10 @@ package base.icq_killer;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.widget.ListView;
 
 import base.icq_killer.fragments.ChatFragment;
+import entities.Message;
 
 
 public class ChatActivity extends Activity {
@@ -14,12 +16,14 @@ public class ChatActivity extends Activity {
         super.onCreate(savedInstanceState);
 
 
+
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             finish();
             return;
         }
 
         setContentView(R.layout.activity_chat);
+
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -28,6 +32,8 @@ public class ChatActivity extends Activity {
                     .findFragmentById(R.id.chatFragment);
             chatFragment.setText(nickname);
         }
+
+
     }
 
 

@@ -12,9 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-
 import base.icq_killer.R;
-import base.icq_killer.dummy.DummyContent;
 
 public class ClientListFragment extends Fragment implements AbsListView.OnItemClickListener {
 
@@ -31,11 +29,6 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
 
     public static ClientListFragment newInstance(String name, String [] clients) {
         ClientListFragment fragment = new ClientListFragment();
-        Bundle args = new Bundle();
-        args.putString(MY_NAME, name);
-        args.putSerializable(CLIENT_LIST, clients);
-        fragment.setArguments(args);
-//        TODO Kostyl
         nickname = name;
         clientArray = clients;
         return fragment;
@@ -47,11 +40,6 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (getArguments() != null) {
-            nickname = getArguments().getString(MY_NAME);
-            clientArray = (String []) getArguments().getSerializable(CLIENT_LIST);
-        }
         clientAdapter = new ArrayAdapter<String>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
     }
@@ -61,13 +49,9 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item, container, false);
 
-        // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
         mListView.setAdapter(clientAdapter);
-
-        // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener(this);
-
         return view;
     }
 
@@ -82,8 +66,6 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != listener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
             listener.onClientSelected(mListView.getItemAtPosition(position).toString());
         }
     }
@@ -101,16 +83,6 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
         }
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnItemSelectedListener {
         public void onClientSelected(String nickname);
     }

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -17,21 +16,20 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
+import entities.User;
 import protocol.BaseProto;
 import protocol.RestProto;
-import entities.UserEntity;
 import utils.ProgressBarViewer;
 
 
 public class MainActivity extends Activity {
 
     private Button buttonSignIn;
-    private UserEntity user = new UserEntity();
+    private User user = new User();
     private BaseProto protocol = new RestProto();
     private WebSocketClient mWebSocketClient;
     private final String wsUrl = "ws://immense-bayou-7299.herokuapp.com/send";
@@ -46,8 +44,8 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 EditText nameField = (EditText) findViewById(R.id.loginField);
-//                new GetUserName().execute(nameField.getText().toString());
-                new ConnectWebSocket().execute(wsUrl);
+                new GetUserName().execute(nameField.getText().toString());
+//                new ConnectWebSocket().execute(wsUrl);
             }
         });
     }

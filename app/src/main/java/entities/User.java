@@ -12,7 +12,7 @@ import protocol.BaseProto;
 /**
  * Created by eugene on 11.03.15.
  */
-public class UserEntity {
+public class User implements BaseEntity {
 
     private final String URL = "/user";
     private Boolean successLogin = false;
@@ -38,12 +38,12 @@ public class UserEntity {
     }
 
 
-    public UserEntity read() {
+    public User read() {
         return null;
     }
 
 
-    public ArrayList<UserEntity> list() {
+    public ArrayList<User> list() {
         return null;
     }
 

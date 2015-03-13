@@ -29,7 +29,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
             e.printStackTrace();
         }
         ClientListFragment clf = ClientListFragment.newInstance(nickname, clientArray);
-        ChatFragment ctf = ChatFragment.newInstance(clientArray[0], nickname);
+        ChatFragment ctf = ChatFragment.newInstance(nickname);
         setContentView(R.layout.activity_client);
     }
 
