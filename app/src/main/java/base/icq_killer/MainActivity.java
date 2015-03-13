@@ -32,7 +32,8 @@ public class MainActivity extends Activity {
     private User user = new User();
     private BaseProto protocol = new RestProto();
     private WebSocketClient mWebSocketClient;
-    private final String wsUrl = "ws://immense-bayou-7299.herokuapp.com/send";
+
+    private final String wsUrl = "ws://" + R.string.server_URL + "/send";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +45,8 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 EditText nameField = (EditText) findViewById(R.id.loginField);
-                new GetUserName().execute(nameField.getText().toString());
-//                new ConnectWebSocket().execute(wsUrl);
+//                new GetUserName().execute(nameField.getText().toString());
+                new ConnectWebSocket().execute(wsUrl);
             }
         });
     }

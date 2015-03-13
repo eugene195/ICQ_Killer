@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
+import base.icq_killer.R;
 import entities.BaseEntity;
 import utils.HttpRequester;
 
@@ -22,7 +23,7 @@ import utils.HttpRequester;
 public class RestProto implements BaseProto {
 
 //    private final String serverUrl = getResources().getString(R.string.server_url);
-    private final String serverUrl = "http://immense-bayou-7299.herokuapp.com";
+    private final String serverUrl = "http://" + R.string.server_URL;
     private final HttpClient httpclient = new DefaultHttpClient();
 
     private HttpPost createPost (ArrayList <BasicNameValuePair> params, String url) {
