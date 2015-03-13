@@ -24,7 +24,6 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     private OnItemSelectedListener listener;
 
     private AbsListView mListView;
-
     private ListAdapter clientAdapter;
 
     public static ClientListFragment newInstance(String name, String [] clients) {
@@ -40,7 +39,7 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        clientAdapter = new ArrayAdapter<String>(getActivity(),
+        clientAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
     }
 
@@ -55,13 +54,11 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
         return view;
     }
 
-
     @Override
     public void onDetach() {
         super.onDetach();
         listener = null;
     }
-
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -87,7 +84,6 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
         public void onClientSelected(String nickname);
     }
 
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -98,5 +94,4 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
                     + " must implement OnItemSelectedListener");
         }
     }
-
 }

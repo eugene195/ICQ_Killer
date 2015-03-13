@@ -3,7 +3,27 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Large Text"
+        android:id="@+id/myName"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Large Text"
+        android:id="@+id/destName"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        />
     <ListView
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="40dp"
         android:id="@+id/chatView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,7 +38,7 @@
         android:layout_alignParentLeft="true"
         android:orientation="vertical" >
         <EditText
-            android:id="@+id/editText1"
+            android:id="@+id/messageBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -26,13 +46,4 @@
             android:ems="10"
             android:inputType="text" />
     </RelativeLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/chatText"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
 </RelativeLayout>

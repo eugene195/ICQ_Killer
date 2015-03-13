@@ -34,24 +34,23 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     }
 
     @Override
-    public void onClientSelected(String nickname) {
+    public void onClientSelected(String dest) {
         ChatFragment fragment = (ChatFragment) getFragmentManager()
                 .findFragmentById(R.id.chatFragment);
         if (fragment != null && fragment.isInLayout()) {
-            fragment.setText(nickname);
+            fragment.changeChatroom(dest);
         } else {
             Intent intent = new Intent(getApplicationContext(),
                     ChatActivity.class);
-            intent.putExtra("nickname", nickname);
+            intent.putExtra("destName", dest);
+            intent.putExtra("myName", nickname);
             startActivity(intent);
         }
     }
 
-
     private void fetchParams (Intent intent) throws JSONException {
         nickname = intent.getStringExtra(MY_NAME);
         ArrayList<String> clients = (ArrayList<String>) intent.getSerializableExtra(CLIENT_LIST);
-
         if (clients != null) {
             clientArray = new String[clients.size()];
             clients.toArray(clientArray);

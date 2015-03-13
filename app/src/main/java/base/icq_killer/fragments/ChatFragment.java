@@ -1,12 +1,12 @@
 package base.icq_killer.fragments;
 
-import android.app.Activity;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -18,20 +18,40 @@ public class ChatFragment extends Fragment {
     private static final String DESTINATION = "destination";
     private static final String NICKNAME = "nickname";
 
-    private static String destination;
-    private static String nickname;
+    private static String destName = "";
+    private static String myName = "";
 
     private ListView listView;
     private MessageArrayAdapter adapter;
+    private EditText msgBox;
 
     public static ChatFragment newInstance(String nick) {
         ChatFragment fragment = new ChatFragment();
-//        destination = dest;
-        nickname = nick;
+        myName = nick;
         return fragment;
     }
 
     public ChatFragment() {
+    }
+
+    @Override
+    public void onActivityCreated (Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setNames(destName);
+        recreateAdapter();
+        msgBox = (EditText) getView().findViewById(R.id.messageBox);
+        msgBox.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    Message msg = new Message();
+                    msg.create(myName, destName, msgBox.getText().toString(), true);
+                    addMsg(msg);
+                    msgBox.setText("");
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     @Override
@@ -46,24 +66,40 @@ public class ChatFragment extends Fragment {
         return view;
     }
 
-    public void setText(String item) {
-        TextView view = (TextView) getView().findViewById(R.id.chatText);
-        view.setText(item);
+    public void setNames(String dest) {
+        TextView myView = (TextView) getView().findViewById(R.id.myName),
+                destView = (TextView) getView().findViewById(R.id.destName);
+        if ((myView != null) && (destView != null)) {
+            myView.setText(myName);
+            destView.setText(dest);
+            destName = dest;
+        }
+    }
 
+    public void loadMsgHistory () {
+//        TODO DBQuery
+//        addItems();
+    }
+
+    public void changeChatroom (String dest) {
+        if (!dest.equals(destName)) {
+            recreateAdapter();
+            setNames(dest);
+        }
+    }
+
+    private void addMsg (Message msg) {
+        adapter.add(msg);
+    }
+
+
+    private void recreateAdapter () {
         listView = (ListView) getView().findViewById(R.id.chatView);
         adapter = new MessageArrayAdapter(getActivity(), R.layout.listitem_chat);
         listView.setAdapter(adapter);
-        addItems();
-    }
-
-    @Override
-    public void onActivityCreated (Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        setText(destination);
     }
 
     private void addItems() {
-//        todo
         Message msg = new Message();
         msg.create("Max", "Vasya", "Hello, Vasya");
         adapter.add(msg);

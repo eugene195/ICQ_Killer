@@ -13,17 +13,13 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import entities.Message;
 
-/**
- * Created by eugene on 13.03.15.
- */
 public class MessageArrayAdapter extends ArrayAdapter<Message> {
 
-    private TextView message;
-    private List<Message> messages = new ArrayList<Message>();
+    private TextView messageView;
+    private List<Message> messages = new ArrayList<>();
     private LinearLayout wrapper;
 
     @Override
@@ -45,23 +41,17 @@ public class MessageArrayAdapter extends ArrayAdapter<Message> {
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
-//        TODO for testing
-        Random rand=new Random();
-        boolean left = rand.nextInt(1) == 0;
-
         View row = convertView;
         if (row == null) {
             LayoutInflater inflater = (LayoutInflater) this.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             row = inflater.inflate(R.layout.listitem_chat, parent, false);
         }
         wrapper = (LinearLayout) row.findViewById(R.id.wrapper);
-        Message comment = getItem(position);
-        message = (TextView) row.findViewById(R.id.message);
-        message.setText(comment.text);
-
-//        TODO for test
-        message.setBackgroundResource(left ? R.drawable.bubble_yellow : R.drawable.bubble_green);
-        wrapper.setGravity(left ? Gravity.START : Gravity.END);
+        Message message = getItem(position);
+        messageView = (TextView) row.findViewById(R.id.message);
+        messageView.setText(message.text);
+        messageView.setBackgroundResource(message.isMine ? R.drawable.bubble_yellow : R.drawable.bubble_green);
+        wrapper.setGravity(message.isMine ? Gravity.START : Gravity.END);
         return row;
     }
 
