@@ -31,8 +31,7 @@ public class MainActivity extends Activity {
     private Button buttonSignIn;
     private User user = new User();
     private BaseProto protocol = new RestProto();
-    private WebSocketClient mWebSocketClient;
-    private final String wsUrl = "ws://immense-bayou-7299.herokuapp.com/send";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +44,6 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 EditText nameField = (EditText) findViewById(R.id.loginField);
                 new GetUserName().execute(nameField.getText().toString());
-//                new ConnectWebSocket().execute(wsUrl);
             }
         });
     }
@@ -81,22 +79,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    private class ConnectWebSocket extends AsyncTask<String, Void, String> {
-        private static final String progressBarMsg = "Connecting to server";
-        public ConnectWebSocket() {}
-        protected void onPreExecute() {
-            ProgressBarViewer.view(MainActivity.this, progressBarMsg);
-        }
-        protected String doInBackground(String ... urls) {
-            String url = urls[0];
-            connectWebSocket(url);
-            return "";
-        }
-        protected void onPostExecute(String result) {
-            ProgressBarViewer.hide();
-        }
-    }
-
     private Intent clientListIntent () throws JSONException {
         Intent intent = new Intent(getApplicationContext(),
                 ClientActivity.class);
@@ -114,52 +96,5 @@ public class MainActivity extends Activity {
 
     private void ShowMessage(String message) {
         Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
-    }
-
-
-    // TODO
-
-    private void connectWebSocket(String url) {
-        URI uri;
-        try {
-            uri = new URI(url);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            return;
-        }
-        mWebSocketClient = new WebSocketClient(uri) {
-            @Override
-            public void onOpen(ServerHandshake serverHandshake) {
-                Log.i("Websocket", "Opened");
-                mWebSocketClient.send("Hello from " + Build.MANUFACTURER + " " + Build.MODEL);
-            }
-            @Override
-            public void onMessage(String s) {
-                final String message = s;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d("WS", message);
-//                        TextView textView = (TextView)findViewById(R.id.messages);
-//                        textView.setText(textView.getText() + "\n" + message);
-                    }
-                });
-            }
-            @Override
-            public void onClose(int i, String s, boolean b) {
-                Log.i("Websocket", "Closed " + s);
-            }
-            @Override
-            public void onError(Exception e) {
-                Log.i("Websocket", "Error " + e.getMessage());
-            }
-        };
-        mWebSocketClient.connect();
-    }
-    public void sendMessage() {
-//        EditText editText = (EditText)findViewById(R.id.message);
-//        mWebSocketClient.send(editText.getText().toString());
-        mWebSocketClient.send("Surprise");
-//        editText.setText("");
     }
 }

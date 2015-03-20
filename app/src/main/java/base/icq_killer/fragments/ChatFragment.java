@@ -12,13 +12,17 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 import base.icq_killer.MessageArrayAdapter;
 import base.icq_killer.R;
+import entities.BaseEntity;
 import entities.Message;
 
 public class ChatFragment extends Fragment {
     private static final String DESTINATION = "destination";
     private static final String NICKNAME = "nickname";
+    private static final String MESSAGE_LIST = "msglist";
 
     private static String destName = "";
     private static String myName = "";
@@ -26,6 +30,8 @@ public class ChatFragment extends Fragment {
     private ListView listView;
     private MessageArrayAdapter adapter;
     private EditText msgBox;
+
+    private ArrayList <Message> msgList = new ArrayList<>();
 
     public static ChatFragment newInstance(String nick) {
         ChatFragment fragment = new ChatFragment();
@@ -43,6 +49,7 @@ public class ChatFragment extends Fragment {
         if (savedInstanceState != null) {
             destName = savedInstanceState.getString(DESTINATION);
             myName = savedInstanceState.getString(NICKNAME);
+            msgList = (ArrayList<Message>) savedInstanceState.getSerializable(MESSAGE_LIST);
         }
 
         setNames(destName);
@@ -70,8 +77,7 @@ public class ChatFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_chat, container, false);
-        return view;
+        return inflater.inflate(R.layout.fragment_chat, container, false);
     }
 
     public void setNames(String dest) {
@@ -93,12 +99,15 @@ public class ChatFragment extends Fragment {
 
     private void addMsg (Message msg) {
         adapter.add(msg);
+        msgList.add(msg);
     }
 
     private void recreateAdapter () {
         listView = (ListView) getView().findViewById(R.id.chatView);
-        adapter = new MessageArrayAdapter(getActivity(), R.layout.listitem_chat);
-        listView.setAdapter(adapter);
+        if (listView != null) {
+            adapter = new MessageArrayAdapter(getActivity(), R.layout.listitem_chat);
+            listView.setAdapter(adapter);
+        }
     }
 
     @Override
@@ -106,5 +115,6 @@ public class ChatFragment extends Fragment {
         super.onSaveInstanceState(outState);
         outState.putString(DESTINATION, destName);
         outState.putString(NICKNAME, myName);
+        outState.putSerializable(MESSAGE_LIST, msgList);
     }
 }

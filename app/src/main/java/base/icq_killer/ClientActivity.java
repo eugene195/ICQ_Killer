@@ -1,8 +1,12 @@
 package base.icq_killer;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+
 import org.json.JSONException;
 
 import java.io.Serializable;
@@ -17,6 +21,13 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     public static final String MY_NAME = "my_name";
     public static final String CLIENT_LIST = "client_list";
 
+    public static final int ORIENTATION_PORTRAIT = 1;
+    public static final int ORIENTATION_LANDSCAPE = 2;
+
+    private int orientation = 1;
+
+    ClientListFragment clf;
+    ChatFragment ctf;
     private String nickname;
     private String [] clientArray;
 
@@ -25,35 +36,36 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState != null) {
-            //Restore the fragment's instance
-//            clientArray = getSupportFragmentManager().getFragment(
-//                    savedInstanceState, "mContent");
+            nickname = savedInstanceState.getString(MY_NAME);
+            clientArray = (String []) savedInstanceState.getSerializable(CLIENT_LIST);
         }
-
         Intent intent = getIntent();
         try {
             fetchParams(intent);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        ClientListFragment clf = ClientListFragment.newInstance(nickname, clientArray);
-        ChatFragment ctf = ChatFragment.newInstance(nickname);
+        clf = ClientListFragment.newInstance(nickname, clientArray);
+        ctf = ChatFragment.newInstance(nickname);
         setContentView(R.layout.activity_client);
+
+        orientation = getResources().getConfiguration().orientation;
+        if (orientation == ORIENTATION_PORTRAIT) {
+            showFragment(clf);
+        }
     }
 
     @Override
     public void onClientSelected(String dest) {
-        ChatFragment fragment = (ChatFragment) getFragmentManager()
-                .findFragmentById(R.id.chatFragment);
-        if (fragment != null && fragment.isInLayout()) {
-            fragment.changeChatroom(dest);
-        } else {
-            Intent intent = new Intent(getApplicationContext(),
-                    ChatActivity.class);
-            intent.putExtra("destName", dest);
-            intent.putExtra("myName", nickname);
-            startActivity(intent);
-        }
+        if (orientation == ORIENTATION_PORTRAIT)
+            showFragment(ctf);
+    }
+
+    public void showFragment(Fragment fragment) {
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.contentFragment, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     private void fetchParams (Intent intent) throws JSONException {
@@ -73,10 +85,23 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
         ChatFragment fragment = (ChatFragment) getFragmentManager()
                 .findFragmentById(R.id.chatFragment);
-        getFragmentManager().putFragment(outState, "ChatFragment", fragment);
+        if (fragment != null)
+            getFragmentManager().putFragment(outState, "ChatFragment", fragment);
+
 
         ClientListFragment clientListFragment = (ClientListFragment) getFragmentManager()
                 .findFragmentById(R.id.clientFragment);
-        getFragmentManager().putFragment(outState, "ClientListFragment", clientListFragment);
+        if (clientListFragment != null)
+            getFragmentManager().putFragment(outState, "ClientListFragment", clientListFragment);
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        if (getFragmentManager().getBackStackEntryCount() > 0) {
+            getFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
+        }
     }
 }

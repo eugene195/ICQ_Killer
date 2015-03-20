@@ -37,9 +37,7 @@ public class HttpRequester {
             }
             JSONTokener tokener = new JSONTokener(builder.toString());
             finalResult = new JSONArray(tokener);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
+        } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
         return finalResult;
@@ -53,9 +51,7 @@ public class HttpRequester {
             String json = reader.readLine();
             JSONTokener tokener = new JSONTokener(json);
             finalResult = new JSONObject(tokener);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
+        } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
         return finalResult;

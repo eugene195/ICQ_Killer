@@ -45,6 +45,8 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
         }
         clientAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
+        if (clientArray.length == 0)
+            setEmptyText("Client list is empty");
     }
 
     @Override
