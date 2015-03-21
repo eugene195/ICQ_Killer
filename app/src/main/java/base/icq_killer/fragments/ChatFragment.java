@@ -26,12 +26,18 @@ public class ChatFragment extends Fragment {
 
     private static String destName = "";
     private static String myName = "";
+    private ArrayList <Message> msgList = new ArrayList<>();
 
     private ListView listView;
+
+    @Override
+    public void onDestroyView() {
+        msgList.clear();
+        super.onDestroyView();
+    }
+
     private MessageArrayAdapter adapter;
     private EditText msgBox;
-
-    private ArrayList <Message> msgList = new ArrayList<>();
 
     public static ChatFragment newInstance(String nick) {
         ChatFragment fragment = new ChatFragment();
@@ -52,21 +58,25 @@ public class ChatFragment extends Fragment {
             msgList = (ArrayList<Message>) savedInstanceState.getSerializable(MESSAGE_LIST);
         }
 
-        setNames(destName);
         recreateAdapter();
         msgBox = (EditText) getView().findViewById(R.id.messageBox);
         msgBox.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    Message msg = new Message();
-                    msg.create(myName, destName, msgBox.getText().toString(), true);
-                    addMsg(msg);
+                    addMsg();
                     msgBox.setText("");
                     return true;
                 }
                 return false;
             }
         });
+
+        TextView myView = (TextView) getView().findViewById(R.id.myName),
+                destView = (TextView) getView().findViewById(R.id.destName);
+        if ((myView != null) && (destView != null)) {
+            myView.setText(myName);
+            destView.setText(destName);
+        }
     }
 
     @Override
@@ -80,32 +90,21 @@ public class ChatFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_chat, container, false);
     }
 
-    public void setNames(String dest) {
-        TextView myView = (TextView) getView().findViewById(R.id.myName),
-                destView = (TextView) getView().findViewById(R.id.destName);
-        if ((myView != null) && (destView != null)) {
-            myView.setText(myName);
-            destView.setText(dest);
+    public void setNames(String my, String dest) {
+            myName = my;
             destName = dest;
         }
-    }
 
-    public void changeChatroom (String dest) {
-        if (!dest.equals(destName)) {
-            recreateAdapter();
-            setNames(dest);
-        }
-    }
-
-    private void addMsg (Message msg) {
-        adapter.add(msg);
+    private void addMsg () {
+        Message msg = new Message();
+        msg.create(myName, destName, msgBox.getText().toString(), true);
         msgList.add(msg);
     }
 
     private void recreateAdapter () {
         listView = (ListView) getView().findViewById(R.id.chatView);
         if (listView != null) {
-            adapter = new MessageArrayAdapter(getActivity(), R.layout.listitem_chat);
+            adapter = new MessageArrayAdapter(getActivity(), R.layout.listitem_chat, msgList, myName);
             listView.setAdapter(adapter);
         }
     }

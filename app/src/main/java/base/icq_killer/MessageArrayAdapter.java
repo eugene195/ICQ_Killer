@@ -18,9 +18,9 @@ import entities.Message;
 
 public class MessageArrayAdapter extends ArrayAdapter<Message> {
 
-    private TextView messageView;
     private List<Message> messages = new ArrayList<>();
-    private LinearLayout wrapper;
+
+    private static String myName = "";
 
     @Override
     public void add(Message object) {
@@ -28,8 +28,10 @@ public class MessageArrayAdapter extends ArrayAdapter<Message> {
         super.add(object);
     }
 
-    public MessageArrayAdapter(Context context, int textViewResourceId) {
+    public MessageArrayAdapter(Context context, int textViewResourceId, ArrayList<Message> msglist, String my) {
         super(context, textViewResourceId);
+        messages = msglist;
+        myName = my;
     }
 
     public int getCount() {
@@ -46,16 +48,13 @@ public class MessageArrayAdapter extends ArrayAdapter<Message> {
             LayoutInflater inflater = (LayoutInflater) this.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             row = inflater.inflate(R.layout.listitem_chat, parent, false);
         }
-        wrapper = (LinearLayout) row.findViewById(R.id.wrapper);
+        LinearLayout wrapper = (LinearLayout) row.findViewById(R.id.wrapper);
         Message message = getItem(position);
-        messageView = (TextView) row.findViewById(R.id.message);
-        messageView.setText(message.text);
-        messageView.setBackgroundResource(message.isMine ? R.drawable.bubble_yellow : R.drawable.bubble_green);
-        wrapper.setGravity(message.isMine ? Gravity.START : Gravity.END);
+        TextView messageView = (TextView) row.findViewById(R.id.message);
+        messageView.setText(message.getText());
+        boolean isMine = message.getFrom().equals(myName);
+        messageView.setBackgroundResource(isMine ? R.drawable.bubble_yellow : R.drawable.bubble_green);
+        wrapper.setGravity(isMine ? Gravity.START : Gravity.END);
         return row;
-    }
-
-    public Bitmap decodeToBitmap(byte[] decodedByte) {
-        return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
     }
 }

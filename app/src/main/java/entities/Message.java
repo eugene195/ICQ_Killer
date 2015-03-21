@@ -8,10 +8,9 @@ import java.util.Map;
  * Created by eugene on 13.03.15.
  */
 public class Message implements BaseEntity {
-    public String text;
-    public String from;
-    public String to;
-    public boolean isMine = false;
+    private String text;
+    private String from;
+    private String to;
 //    TODO didn't use it still
     private Map<String, Serializable> attachment = new HashMap<>();
 
@@ -28,11 +27,14 @@ public class Message implements BaseEntity {
         text = message;
         this.from = from;
         this.to = to;
-        isMine = mine;
         return true;
     }
 
-    public boolean isMsgMine () {
-        return isMine;
+    public String getText () {
+        return text;
+    }
+
+    public String getFrom () {
+        return from;
     }
 }

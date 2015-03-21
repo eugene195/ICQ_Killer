@@ -2,7 +2,10 @@ package base.icq_killer;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -23,7 +26,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     public static final int ORIENTATION_PORTRAIT = 1;
     public static final int ORIENTATION_LANDSCAPE = 2;
-
+    private static final String BROADCAST_ACTION = "get_message";
     private int orientation = 1;
 
     ClientListFragment clf;
@@ -37,7 +40,6 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
         if (savedInstanceState != null) {
             nickname = savedInstanceState.getString(MY_NAME);
-            clientArray = (String []) savedInstanceState.getSerializable(CLIENT_LIST);
         }
         Intent intent = getIntent();
         try {
@@ -53,12 +55,29 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
         if (orientation == ORIENTATION_PORTRAIT) {
             showFragment(clf);
         }
+
+        serviceConnect();
+    }
+
+    private void serviceConnect () {
+        Intent intent = new Intent(this, ConnectService.class).putExtra(ConnectService.ACTION, ConnectService.INIT_CONNECTION);
+        startService(intent);
+
+        BroadcastReceiver br = new BroadcastReceiver() {
+            // действия при получении сообщений
+            public void onReceive(Context context, Intent intent) {
+                int a = 0;
+            }
+        };
+        IntentFilter intFilt = new IntentFilter(BROADCAST_ACTION);
+        registerReceiver(br, intFilt);
     }
 
     @Override
     public void onClientSelected(String dest) {
         if (orientation == ORIENTATION_PORTRAIT)
             showFragment(ctf);
+        ctf.setNames(nickname, dest);
     }
 
     public void showFragment(Fragment fragment) {
@@ -80,7 +99,6 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putSerializable(CLIENT_LIST, clientArray);
         outState.putString(MY_NAME, nickname);
 
         ChatFragment fragment = (ChatFragment) getFragmentManager()
