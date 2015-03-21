@@ -10,6 +10,8 @@ import android.widget.Toast;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketClient;
 import org.eclipse.jetty.websocket.WebSocketClientFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URI;
@@ -74,7 +76,7 @@ public class ConnectService extends Service {
     }
 
     class WSClient implements Runnable {
-        private static final int SLEEP_TIME = 500;
+        private static final int SLEEP_TIME = 5000;
         private WebSocketClientFactory factory = new WebSocketClientFactory();
         private WebSocket.Connection connection;
         private WebSocketClient client;
@@ -91,6 +93,7 @@ public class ConnectService extends Service {
 //            Intent intent = new Intent(MainActivity.BROADCAST_ACTION);
             while ( true ) {
                 try {
+                    if (!successConn)
                     connection = client.open(new URI(wsUrl), new WebSocket.OnTextMessage() {
                         public void onOpen(Connection connection) {
                             // open notification
@@ -101,27 +104,25 @@ public class ConnectService extends Service {
                         }
 
                         public void onMessage(String data) {
-                            // handle incoming message
+                            Log.d("Hello", "MESSAGE FROM WS");
                         }
                     }).get(5, TimeUnit.SECONDS);
                     if (connection != null) {
                         successConn = true;
-                        connection.sendMessage("Hello World");
+
+                        JSONObject handshake = new JSONObject();
+                        JSONObject data = new JSONObject();
+                        data.put("user", "VASYA3");
+                        handshake.put("action", "handshake").put("data", data);
+
+                        connection.sendMessage(handshake.toString());
                         if (!msgQueue.isEmpty()) {
                             connection.sendMessage((String) msgQueue.take());
                         }
                     } else {
                         sleep(SLEEP_TIME);
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (TimeoutException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (URISyntaxException e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException | IOException | URISyntaxException | JSONException e) {
                     e.printStackTrace();
                 }
 //            sendBroadcast(intent);
