@@ -1,6 +1,9 @@
 package entities;
 
+import org.apache.http.message.BasicNameValuePair;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,23 +14,23 @@ public class Message implements BaseEntity {
     private String text;
     private String from;
     private String to;
-//    TODO didn't use it still
-    private Map<String, Serializable> attachment = new HashMap<>();
+    private final String URL = "/message";
 
-    public boolean create(String from, String to, String message) {
-//        TODO test realization
-        text = message;
-        this.from = from;
-        this.to = to;
-        return true;
-    }
-
-    public boolean create(String from, String to, String message, boolean mine) {
-//        TODO test realization
-        text = message;
-        this.from = from;
-        this.to = to;
-        return true;
+    public Sendable create(HashMap<String, Object> parameters) {
+        String url ="/create";
+        ArrayList <BasicNameValuePair> paramList = new ArrayList<>();
+        try {
+            from = (String) parameters.get("from");
+            to = (String) parameters.get("to");
+            text = (String) parameters.get("text");
+            paramList.add(new BasicNameValuePair("from", from));
+            paramList.add(new BasicNameValuePair("to", to));
+            paramList.add(new BasicNameValuePair("text", text));
+        } catch (Exception exc) {
+            exc.printStackTrace();
+            return null;
+        }
+        return new Sendable(paramList, URL + url);
     }
 
     public String getText () {

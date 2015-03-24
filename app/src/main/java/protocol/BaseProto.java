@@ -6,13 +6,14 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import entities.BaseEntity;
+import entities.Sendable;
 
 /**
  * Created by eugene on 11.03.15.
  */
 public interface BaseProto {
 
-    public JSONObject create(ArrayList<BasicNameValuePair> params, String url);
+    public JSONObject create(Sendable object);
 
 
     public BaseEntity read();

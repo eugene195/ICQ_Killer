@@ -19,22 +19,12 @@ public class User implements BaseEntity {
     private String nickname;
     private JSONArray clients = new JSONArray();
 
-    public boolean create(String name, BaseProto protocol) {
-        try {
-            ArrayList <BasicNameValuePair> paramList = new ArrayList<>();
-            String url ="/login";
-            paramList.add(new BasicNameValuePair("nickname", name));
-            JSONObject json = protocol.create(paramList, url);
-//            TODO everything will fail if proto changes
-            if (json.getString("status").equals("OK")) {
-                clients = json.getJSONArray("clients");
-                nickname = name;
-                return successLogin = true;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
+    public Sendable create(String name) {
+        String url ="/login";
+        ArrayList <BasicNameValuePair> paramList = new ArrayList<>();
+        paramList.add(new BasicNameValuePair("nickname", name));
+        nickname = name;
+        return new Sendable(paramList, URL + url);
     }
 
 
@@ -60,6 +50,8 @@ public class User implements BaseEntity {
     public String getName () { return nickname; }
 
     public JSONArray getClients () { return clients; }
+
+    public void setClients (JSONArray clients) { this.clients = clients; }
 
     public Boolean isLoginSuccess () {
         return successLogin;

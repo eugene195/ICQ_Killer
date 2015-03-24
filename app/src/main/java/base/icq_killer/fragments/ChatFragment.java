@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.os.Bundle;
 
 
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,9 +12,14 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import base.icq_killer.ClientActivity;
+import base.icq_killer.MainActivity;
 import base.icq_killer.MessageArrayAdapter;
 import base.icq_killer.R;
 import entities.BaseEntity;
@@ -97,7 +103,11 @@ public class ChatFragment extends Fragment {
 
     private void addMsg () {
         Message msg = new Message();
-        msg.create(myName, destName, msgBox.getText().toString(), true);
+        HashMap<String, Object> msgParams = new HashMap<>();
+        msgParams.put("from", myName);
+        msgParams.put("to", destName);
+        msgParams.put("text", msgBox.getText().toString());
+        ((ClientActivity)getActivity()).send(msg.create(msgParams));
         msgList.add(msg);
     }
 

@@ -2,6 +2,7 @@ package base.icq_killer;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -16,38 +17,29 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingDeque;
+
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static java.lang.Thread.sleep;
+import entities.Sendable;
 
 public class ConnectService extends Service {
 
     public static final String ACTION = "action";
     public static final String SEND_MESSAGE = "send_message";
     public static final String INIT_CONNECTION = "init_ws";
-    private static final int MESSAGES = 100;
-    private static final int THREADS = 5;
 
-    private ExecutorService es;
     private WSClient client;
-    private ArrayBlockingQueue msgQueue = (ArrayBlockingQueue) new ArrayBlockingQueue<>(MESSAGES);
+    private final IBinder mBinder = new LocalBinder();
 
     public void onCreate() {
         super.onCreate();
-        es = Executors.newFixedThreadPool(THREADS);
-    }
-
-    public ConnectService() {
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
         String action = intent.getStringExtra(ACTION);
 
         if (action.equals(INIT_CONNECTION)) {
@@ -56,10 +48,8 @@ public class ConnectService extends Service {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            es.execute(client);
-        } else if (action.equals(SEND_MESSAGE)) {
-            msgQueue.add("hello");
         }
+        new ConnectWs().execute("");
 
         Log.i("LocalService", "Received start id " + startId + ": " + intent);
         return START_STICKY;
@@ -70,13 +60,33 @@ public class ConnectService extends Service {
         Toast.makeText(this, "stop service", Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public class LocalBinder extends Binder {
+        ConnectService getService() {
+            return ConnectService.this;
+        }
     }
 
-    class WSClient implements Runnable {
-        private static final int SLEEP_TIME = 5000;
+    public IBinder onBind(Intent intent) {
+        return mBinder;
+    }
+
+
+    public void send (Sendable object) {
+
+    }
+
+    private class ConnectWs extends AsyncTask<String, Void, String> {
+        public ConnectWs() {}
+        protected String doInBackground(String ... urls) {
+            client.connect();
+            return "";
+        }
+        protected void onPostExecute(String result) {
+            Log.i("LocalService", "Connected WS");
+        }
+    }
+
+    class WSClient {
         private WebSocketClientFactory factory = new WebSocketClientFactory();
         private WebSocket.Connection connection;
         private WebSocketClient client;
@@ -89,49 +99,45 @@ public class ConnectService extends Service {
             client = factory.newWebSocketClient();
         }
 
-        public void run() {
-//            Intent intent = new Intent(MainActivity.BROADCAST_ACTION);
-            while ( true ) {
-                try {
-                    if (!successConn)
-                    connection = client.open(new URI(wsUrl), new WebSocket.OnTextMessage() {
-                        public void onOpen(Connection connection) {
-                            // open notification
-                        }
+        public boolean isSuccess () {
+            return successConn;
+        }
 
-                        public void onClose(int closeCode, String message) {
-                            // close notification
-                        }
+        public void sendMessage (String msg) throws IOException {
+            connection.sendMessage(msg);
+        }
 
-                        public void onMessage(String data) {
-                            Log.d("Hello", "MESSAGE FROM WS");
-                        }
-                    }).get(5, TimeUnit.SECONDS);
-                    if (connection != null) {
+        public void connect() {
+            try {
+                connection = client.open(new URI(wsUrl), new WebSocket.OnTextMessage() {
+                    public void onOpen(Connection connection) {
                         successConn = true;
-
-                        JSONObject handshake = new JSONObject();
-                        JSONObject data = new JSONObject();
-                        data.put("user", "VASYA3");
-                        handshake.put("action", "handshake").put("data", data);
-
-                        connection.sendMessage(handshake.toString());
-                        if (!msgQueue.isEmpty()) {
-                            connection.sendMessage((String) msgQueue.take());
-                        }
-                    } else {
-                        sleep(SLEEP_TIME);
+                        socketAction("Open");
                     }
-                } catch (InterruptedException | ExecutionException | TimeoutException | IOException | URISyntaxException | JSONException e) {
-                    e.printStackTrace();
-                }
-//            sendBroadcast(intent);
-                stop();
+
+                    public void onClose(int closeCode, String message) {
+                        successConn = false;
+                        socketAction("Close");
+                    }
+
+                    public void onMessage(String data) {
+                        socketAction("Message");
+                    }
+                }).get(5, TimeUnit.SECONDS);
+
+            } catch (InterruptedException | ExecutionException | TimeoutException | IOException | URISyntaxException e) {
+                e.printStackTrace();
             }
         }
 
-        void stop() {
 
-        }
+    }
+    private void socketAction (String type) {
+        Log.i("LocalService", type);
+    }
+
+    private void socketSend (String msg) throws IOException {
+        if (client.isSuccess())
+            client.sendMessage(msg);
     }
 }

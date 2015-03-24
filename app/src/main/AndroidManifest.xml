@@ -24,11 +24,6 @@
         </activity>
 
         <service
-            android:name=".ConnectionService"
-            android:enabled="true"
-            android:exported="true" >
-        </service>
-        <service
             android:name=".ConnectService"
             android:enabled="true"
             android:exported="true" >

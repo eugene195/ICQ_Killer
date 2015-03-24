@@ -15,6 +15,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -59,7 +60,10 @@ public class MainActivity extends Activity {
         protected String doInBackground(String ... urls) {
             String username = urls[0];
             try {
-                success = user.create(username, protocol);
+                JSONObject json = protocol.create(user.create(username));
+                if (json.getString("status").equals("OK")) {
+                    user.setClients(json.getJSONArray("clients"));
+                }
             } catch (Exception exc) {
                 exc.printStackTrace();
             }

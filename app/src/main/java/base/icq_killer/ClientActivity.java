@@ -3,12 +3,16 @@ package base.icq_killer;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.view.View;
 
 import org.json.JSONException;
 
@@ -17,6 +21,7 @@ import java.util.ArrayList;
 
 import base.icq_killer.fragments.ChatFragment;
 import base.icq_killer.fragments.ClientListFragment;
+import entities.Sendable;
 
 
 public class ClientActivity extends FragmentActivity implements ClientListFragment.OnItemSelectedListener {
@@ -34,19 +39,17 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     private String nickname;
     private String [] clientArray;
 
+    private ConnectService mBoundService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (savedInstanceState != null) {
+        if (savedInstanceState != null)
             nickname = savedInstanceState.getString(MY_NAME);
-        }
         Intent intent = getIntent();
-        try {
-            fetchParams(intent);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        fetchParams(intent);
+
         clf = ClientListFragment.newInstance(nickname, clientArray);
         ctf = ChatFragment.newInstance(nickname);
         setContentView(R.layout.activity_client);
@@ -62,6 +65,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     private void serviceConnect () {
         Intent intent = new Intent(this, ConnectService.class).putExtra(ConnectService.ACTION, ConnectService.INIT_CONNECTION);
         startService(intent);
+        doBindService();
 
         BroadcastReceiver br = new BroadcastReceiver() {
             // действия при получении сообщений
@@ -73,11 +77,15 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
         registerReceiver(br, intFilt);
     }
 
+    public void send (Sendable object) {
+        mBoundService.send(object);
+    }
+
     @Override
     public void onClientSelected(String dest) {
+        ctf.setNames(nickname, dest);
         if (orientation == ORIENTATION_PORTRAIT)
             showFragment(ctf);
-        ctf.setNames(nickname, dest);
     }
 
     public void showFragment(Fragment fragment) {
@@ -85,15 +93,6 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
         transaction.replace(R.id.contentFragment, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
-    }
-
-    private void fetchParams (Intent intent) throws JSONException {
-        nickname = intent.getStringExtra(MY_NAME);
-        ArrayList<String> clients = (ArrayList<String>) intent.getSerializableExtra(CLIENT_LIST);
-        if (clients != null) {
-            clientArray = new String[clients.size()];
-            clients.toArray(clientArray);
-        }
     }
 
     @Override
@@ -121,5 +120,55 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
         } else {
             super.onBackPressed();
         }
+    }
+
+    private void fetchParams (Intent intent) {
+        nickname = intent.getStringExtra(MY_NAME);
+        ArrayList<String> clients = (ArrayList<String>) intent.getSerializableExtra(CLIENT_LIST);
+        if (clients != null) {
+            clientArray = new String[clients.size()];
+            clients.toArray(clientArray);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // This is called when the connection with the service has been
+            // established, giving us the service object we can use to
+            // interact with the service.  Because we have bound to a explicit
+            // service that we know is running in our own process, we can
+            // cast its IBinder to a concrete class and directly access it.
+            mBoundService = ((ConnectService.LocalBinder)service).getService();
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            // Because it is running in our same process, we should never
+            // see this happen.
+            mBoundService = null;
+        }
+    };
+
+    void doBindService() {
+        // Establish a connection with the service.  We use an explicit
+        // class name because we want a specific service implementation that
+        // we know will be running in our own process (and thus won't be
+        // supporting component replacement by other applications).
+        bindService(new Intent(ClientActivity.this,
+                ConnectService.class), mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    void doUnbindService() {
+        unbindService(mConnection);
     }
 }

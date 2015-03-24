@@ -1,6 +1,11 @@
 package utils;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,11 +15,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+
+import entities.Sendable;
 
 /**
  * Created by eugene on 11.03.15.
  */
 public class HttpRequester {
+
+    private static final HttpClient httpclient = new DefaultHttpClient();
 
     public static String streamToString(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -24,6 +35,27 @@ public class HttpRequester {
         }
         is.close();
         return sb.toString();
+    }
+
+    private static HttpPost createPost (ArrayList<BasicNameValuePair> params, String url) {
+        HttpPost httppost = new HttpPost(url);
+        try {
+            httppost.setEntity(new UrlEncodedFormEntity(params));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return httppost;
+    }
+
+    public static JSONObject send (Sendable object) {
+        HttpPost httppost = createPost(object.getParams(), object.getUrl());
+        HttpResponse response = null;
+        try {
+            response = httpclient.execute(httppost);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return HttpRequester.responseToObject(response);
     }
 
     public static JSONArray responseToArray (HttpResponse response) {
