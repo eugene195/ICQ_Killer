@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.apache.http.message.BasicNameValuePair;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketClient;
 import org.eclipse.jetty.websocket.WebSocketClientFactory;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -27,10 +29,12 @@ import entities.Sendable;
 public class ConnectService extends Service {
 
     public static final String ACTION = "action";
+    public static final String NICKNAME = "nickname";
     public static final String SEND_MESSAGE = "send_message";
     public static final String INIT_CONNECTION = "init_ws";
 
     private WSClient client;
+    private String myName;
     private final IBinder mBinder = new LocalBinder();
 
     public void onCreate() {
@@ -41,6 +45,7 @@ public class ConnectService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         String action = intent.getStringExtra(ACTION);
+        myName = intent.getStringExtra(NICKNAME);
 
         if (action.equals(INIT_CONNECTION)) {
             try {
@@ -71,8 +76,15 @@ public class ConnectService extends Service {
     }
 
 
-    public void send (Sendable object) {
-
+    public void send (Sendable object) throws JSONException, IOException {
+        if (client.isSuccess()) {
+            JSONObject message = new JSONObject(), data = new JSONObject();
+            ArrayList<BasicNameValuePair> parameters = object.getParams();
+            for (BasicNameValuePair pair : parameters)
+                data.put(pair.getName(), pair.getValue());
+            message.put(ACTION, "message").put("data", data);
+            client.sendMessage(message.toString());
+        }
     }
 
     private class ConnectWs extends AsyncTask<String, Void, String> {
@@ -92,6 +104,8 @@ public class ConnectService extends Service {
         private WebSocketClient client;
         private boolean successConn = false;
         private final String wsUrl = "ws://immense-bayou-7299.herokuapp.com/send";
+        private final String USER = "user";
+        private final String HANDSHAKE = "handshake";
 
 
         public WSClient() throws Exception {
@@ -113,6 +127,14 @@ public class ConnectService extends Service {
                     public void onOpen(Connection connection) {
                         successConn = true;
                         socketAction("Open");
+                        JSONObject handshake = new JSONObject(), data = new JSONObject();
+                        try {
+                            data.put(USER, ConnectService.this.myName);
+                            handshake.put(ConnectService.ACTION, HANDSHAKE).put("data", data);
+                            sendMessage(handshake.toString());
+                        } catch (JSONException | IOException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     public void onClose(int closeCode, String message) {
@@ -132,12 +154,8 @@ public class ConnectService extends Service {
 
 
     }
+
     private void socketAction (String type) {
         Log.i("LocalService", type);
-    }
-
-    private void socketSend (String msg) throws IOException {
-        if (client.isSuccess())
-            client.sendMessage(msg);
     }
 }

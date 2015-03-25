@@ -36,12 +36,6 @@ public class ChatFragment extends Fragment {
 
     private ListView listView;
 
-    @Override
-    public void onDestroyView() {
-        msgList.clear();
-        super.onDestroyView();
-    }
-
     private MessageArrayAdapter adapter;
     private EditText msgBox;
 
@@ -63,7 +57,7 @@ public class ChatFragment extends Fragment {
             myName = savedInstanceState.getString(NICKNAME);
             msgList = (ArrayList<Message>) savedInstanceState.getSerializable(MESSAGE_LIST);
         }
-
+//TODO спортно
         recreateAdapter();
         msgBox = (EditText) getView().findViewById(R.id.messageBox);
         msgBox.setOnKeyListener(new View.OnKeyListener() {
@@ -105,8 +99,8 @@ public class ChatFragment extends Fragment {
         Message msg = new Message();
         HashMap<String, Object> msgParams = new HashMap<>();
         msgParams.put("from", myName);
-        msgParams.put("to", destName);
-        msgParams.put("text", msgBox.getText().toString());
+        msgParams.put("whom", destName);
+        msgParams.put("message", msgBox.getText().toString());
         ((ClientActivity)getActivity()).send(msg.create(msgParams));
         msgList.add(msg);
     }
@@ -126,4 +120,11 @@ public class ChatFragment extends Fragment {
         outState.putString(NICKNAME, myName);
         outState.putSerializable(MESSAGE_LIST, msgList);
     }
+
+    @Override
+    public void onDestroyView() {
+        msgList.clear();
+        super.onDestroyView();
+    }
+
 }

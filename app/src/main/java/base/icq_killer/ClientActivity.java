@@ -16,6 +16,7 @@ import android.view.View;
 
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -64,6 +65,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     private void serviceConnect () {
         Intent intent = new Intent(this, ConnectService.class).putExtra(ConnectService.ACTION, ConnectService.INIT_CONNECTION);
+        intent.putExtra(ConnectService.NICKNAME, nickname);
         startService(intent);
         doBindService();
 
@@ -78,7 +80,11 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     }
 
     public void send (Sendable object) {
-        mBoundService.send(object);
+        try {
+            mBoundService.send(object);
+        } catch (JSONException | IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

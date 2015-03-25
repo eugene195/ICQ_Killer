@@ -15,17 +15,20 @@ public class Message implements BaseEntity {
     private String from;
     private String to;
     private final String URL = "/message";
+    public final String FROM = "from";
+    public final String TO = "whom";
+    public final String MESSAGE = "message";
 
     public Sendable create(HashMap<String, Object> parameters) {
         String url ="/create";
         ArrayList <BasicNameValuePair> paramList = new ArrayList<>();
         try {
-            from = (String) parameters.get("from");
-            to = (String) parameters.get("to");
-            text = (String) parameters.get("text");
-            paramList.add(new BasicNameValuePair("from", from));
-            paramList.add(new BasicNameValuePair("to", to));
-            paramList.add(new BasicNameValuePair("text", text));
+            from = (String) parameters.get(FROM);
+            to = (String) parameters.get(TO);
+            text = (String) parameters.get(MESSAGE);
+            paramList.add(new BasicNameValuePair(FROM, from));
+            paramList.add(new BasicNameValuePair(TO, to));
+            paramList.add(new BasicNameValuePair(MESSAGE, text));
         } catch (Exception exc) {
             exc.printStackTrace();
             return null;

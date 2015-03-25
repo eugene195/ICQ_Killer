@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import entities.User;
 import protocol.BaseProto;
@@ -59,8 +60,10 @@ public class MainActivity extends Activity {
         }
         protected String doInBackground(String ... urls) {
             String username = urls[0];
+            HashMap<String, Object> parameters = new HashMap<>();
+            parameters.put("nickname", username);
             try {
-                JSONObject json = protocol.create(user.create(username));
+                JSONObject json = protocol.create(user.create(parameters));
                 if (json.getString("status").equals("OK")) {
                     user.setClients(json.getJSONArray("clients"));
                 }

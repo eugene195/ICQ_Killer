@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import protocol.BaseProto;
 
@@ -15,14 +16,16 @@ import protocol.BaseProto;
 public class User implements BaseEntity {
 
     private final String URL = "/user";
+    public final String NICKNAME = "nickname";
     private Boolean successLogin = false;
     private String nickname;
     private JSONArray clients = new JSONArray();
 
-    public Sendable create(String name) {
+    public Sendable create(HashMap<String, Object> parameters) {
+        String name = (String) parameters.get(NICKNAME);
         String url ="/login";
         ArrayList <BasicNameValuePair> paramList = new ArrayList<>();
-        paramList.add(new BasicNameValuePair("nickname", name));
+        paramList.add(new BasicNameValuePair(NICKNAME, name));
         nickname = name;
         return new Sendable(paramList, URL + url);
     }

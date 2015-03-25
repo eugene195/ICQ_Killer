@@ -43,10 +43,11 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
             nickname = savedInstanceState.getString(MY_NAME);
             clientArray = (String []) savedInstanceState.getSerializable(CLIENT_LIST);
         }
-        clientAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
         if (clientArray.length == 0)
             setEmptyText("Client list is empty");
+        else
+            clientAdapter = new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
     }
 
     @Override
@@ -73,11 +74,6 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
         }
     }
 
-    /**
-     * The default content for this Fragment has a TextView that is shown when
-     * the list is empty. If you would like to change the text, call this method
-     * to supply the text it should use.
-     */
     public void setEmptyText(CharSequence emptyText) {
         View emptyView = mListView.getEmptyView();
 
