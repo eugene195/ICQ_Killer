@@ -98,7 +98,8 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
                         }
                     }
                 else if (event.equals("message")) {
-                    showMessage(message);
+//                    showMessage(message);
+                        messageReceived(message);
                 }
 
             }
@@ -108,6 +109,10 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     public void showMessage(String message) {
         Toast.makeText(ClientActivity.this, message, Toast.LENGTH_LONG).show();
+    }
+
+    private void messageReceived (String message) {
+
     }
 
     public void send (Sendable object) {

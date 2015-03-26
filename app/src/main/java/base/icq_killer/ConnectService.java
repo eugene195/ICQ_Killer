@@ -123,7 +123,7 @@ public class ConnectService extends Service {
         private WebSocket.Connection connection;
         private WebSocketClient client;
         private boolean successConn = false;
-        private final String wsUrl = "ws://immense-bayou-7299.herokuapp.com/message/create";
+        private final String wsUrl = "ws://immense-bayou-7299.herokuapp.com/send";
 
 
         public WSClient() throws Exception {
@@ -143,7 +143,7 @@ public class ConnectService extends Service {
         public void connect() {
             try {
 //                connection = client.open(new URI(wsUrl + "?nickname=" + myName), new WebSocket.OnTextMessage() {
-                connection = client.open(new URI(wsUrl), new WebSocket.OnTextMessage() {
+                connection = client.open(new URI(wsUrl + "?nickname=" + myName), new WebSocket.OnTextMessage() {
                     public void onOpen(Connection connection) {
                         successConn = true;
                         socketAction("Open", "");
@@ -171,6 +171,10 @@ public class ConnectService extends Service {
         Log.i("LocalService", type);
         if (type.equals("Open")) {
             Intent i = new Intent("SocketAction").putExtra("message", "Socket is about to open").putExtra("event", "open");
+            this.sendBroadcast(i);
+        }
+        else if (type.equals("Message")) {
+            Intent i = new Intent("SocketAction").putExtra("message", message).putExtra("event", "message");
             this.sendBroadcast(i);
         }
     }

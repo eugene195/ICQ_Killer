@@ -14,6 +14,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +60,6 @@ public class ChatFragment extends Fragment {
             myName = savedInstanceState.getString(NICKNAME);
             msgList = (ArrayList<Message>) savedInstanceState.getSerializable(MESSAGE_LIST);
         }
-//TODO спортно
         recreateAdapter();
         msgBox = (EditText) getView().findViewById(R.id.messageBox);
         msgBox.setOnKeyListener(new View.OnKeyListener() {
@@ -88,6 +90,20 @@ public class ChatFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_chat, container, false);
+    }
+
+    public void receiveMsg (String message) {
+        try {
+            JSONObject json = new JSONObject(message);
+            JSONObject data = new JSONObject((String) json.get("data"));
+            Message msg = new Message();
+            HashMap<String, Object> msgParams = new HashMap<>();
+            msgParams.put("from", data.get("from"));
+            msgParams.put("whom", myName);
+            msgParams.put("message", data.get("from"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setNames(String my, String dest) {
