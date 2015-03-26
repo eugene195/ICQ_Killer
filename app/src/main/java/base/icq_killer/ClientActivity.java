@@ -12,9 +12,12 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -41,6 +44,9 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     private String [] clientArray;
 
     private ConnectService mBoundService;
+    private BroadcastReceiver mReceiver;
+
+    private boolean handshakeDone = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,14 +75,39 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
         startService(intent);
         doBindService();
 
-        BroadcastReceiver br = new BroadcastReceiver() {
-            // действия при получении сообщений
+        IntentFilter intentFilter = new IntentFilter(
+                "SocketAction");
+        mReceiver = new BroadcastReceiver() {
+
+            @Override
             public void onReceive(Context context, Intent intent) {
-                int a = 0;
+                String message = intent.getStringExtra("message");
+                String event = intent.getStringExtra("event");
+                Log.i("SocketAction", event + " = " + message);
+
+                if (event.equals("open"))
+                    if (!handshakeDone) {
+                        JSONObject handshake = new JSONObject(), data = new JSONObject();
+                        try {
+                            data.put("user", nickname);
+                            handshake.put(ConnectService.ACTION, "handshake").put("data", data);
+                            mBoundService.send(handshake.toString());
+                            handshakeDone = true;
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                else if (event.equals("message")) {
+                    showMessage(message);
+                }
+
             }
         };
-        IntentFilter intFilt = new IntentFilter(BROADCAST_ACTION);
-        registerReceiver(br, intFilt);
+        this.registerReceiver(mReceiver, intentFilter);
+    }
+
+    public void showMessage(String message) {
+        Toast.makeText(ClientActivity.this, message, Toast.LENGTH_LONG).show();
     }
 
     public void send (Sendable object) {
@@ -138,14 +169,6 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     }
 
 
-
-
-
-
-
-
-
-
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             // This is called when the connection with the service has been
@@ -177,4 +200,6 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     void doUnbindService() {
         unbindService(mConnection);
     }
+
+
 }

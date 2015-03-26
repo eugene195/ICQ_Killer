@@ -1,5 +1,7 @@
 package utils;
 
+import android.util.Log;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -39,6 +41,7 @@ public class HttpRequester {
 
     private static HttpPost createPost (ArrayList<BasicNameValuePair> params, String url) {
         HttpPost httppost = new HttpPost(url);
+        Log.i("HttpPost request", url);
         try {
             httppost.setEntity(new UrlEncodedFormEntity(params));
         } catch (UnsupportedEncodingException e) {

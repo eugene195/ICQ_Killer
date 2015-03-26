@@ -23,7 +23,7 @@ public class User implements BaseEntity {
 
     public Sendable create(HashMap<String, Object> parameters) {
         String name = (String) parameters.get(NICKNAME);
-        String url ="/login";
+        String url ="/create";
         ArrayList <BasicNameValuePair> paramList = new ArrayList<>();
         paramList.add(new BasicNameValuePair(NICKNAME, name));
         nickname = name;

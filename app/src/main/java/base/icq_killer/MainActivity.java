@@ -66,6 +66,7 @@ public class MainActivity extends Activity {
                 JSONObject json = protocol.create(user.create(parameters));
                 if (json.getString("status").equals("OK")) {
                     user.setClients(json.getJSONArray("clients"));
+                    success = true;
                 }
             } catch (Exception exc) {
                 exc.printStackTrace();

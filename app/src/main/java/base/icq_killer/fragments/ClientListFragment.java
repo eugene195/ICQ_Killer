@@ -11,7 +11,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import base.icq_killer.ClientActivity;
 import base.icq_killer.R;
 
 public class ClientListFragment extends Fragment implements AbsListView.OnItemClickListener {
@@ -75,11 +77,8 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     }
 
     public void setEmptyText(CharSequence emptyText) {
-        View emptyView = mListView.getEmptyView();
-
-        if (emptyView instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
-        }
+//        TODO NPE
+        ((ClientActivity)getActivity()).showMessage("No clients");
     }
 
     public interface OnItemSelectedListener {

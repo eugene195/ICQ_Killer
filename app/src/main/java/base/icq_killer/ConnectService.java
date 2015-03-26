@@ -83,8 +83,12 @@ public class ConnectService extends Service {
             for (BasicNameValuePair pair : parameters)
                 data.put(pair.getName(), pair.getValue());
             message.put(ACTION, "message").put("data", data);
-            client.sendMessage(message.toString());
+            send(message.toString());
         }
+    }
+
+    public void send (String message) {
+        new SendWs().execute(message);
     }
 
     private class ConnectWs extends AsyncTask<String, Void, String> {
@@ -98,14 +102,28 @@ public class ConnectService extends Service {
         }
     }
 
+    private class SendWs extends AsyncTask<String, Void, String> {
+        public SendWs() {}
+        protected String doInBackground(String ... urls) {
+            String strToSend = urls[0];
+            try {
+                client.sendMessage(strToSend);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return "";
+        }
+        protected void onPostExecute(String result) {
+            Log.i("LocalService", "Message sent");
+        }
+    }
+
     class WSClient {
         private WebSocketClientFactory factory = new WebSocketClientFactory();
         private WebSocket.Connection connection;
         private WebSocketClient client;
         private boolean successConn = false;
-        private final String wsUrl = "ws://immense-bayou-7299.herokuapp.com/send";
-        private final String USER = "user";
-        private final String HANDSHAKE = "handshake";
+        private final String wsUrl = "ws://immense-bayou-7299.herokuapp.com/message/create";
 
 
         public WSClient() throws Exception {
@@ -118,32 +136,26 @@ public class ConnectService extends Service {
         }
 
         public void sendMessage (String msg) throws IOException {
+            if (connection != null)
             connection.sendMessage(msg);
         }
 
         public void connect() {
             try {
+//                connection = client.open(new URI(wsUrl + "?nickname=" + myName), new WebSocket.OnTextMessage() {
                 connection = client.open(new URI(wsUrl), new WebSocket.OnTextMessage() {
                     public void onOpen(Connection connection) {
                         successConn = true;
-                        socketAction("Open");
-                        JSONObject handshake = new JSONObject(), data = new JSONObject();
-                        try {
-                            data.put(USER, ConnectService.this.myName);
-                            handshake.put(ConnectService.ACTION, HANDSHAKE).put("data", data);
-                            sendMessage(handshake.toString());
-                        } catch (JSONException | IOException e) {
-                            e.printStackTrace();
-                        }
+                        socketAction("Open", "");
                     }
 
                     public void onClose(int closeCode, String message) {
                         successConn = false;
-                        socketAction("Close");
+                        socketAction("Close", "");
                     }
 
                     public void onMessage(String data) {
-                        socketAction("Message");
+                        socketAction("Message", data);
                     }
                 }).get(5, TimeUnit.SECONDS);
 
@@ -155,7 +167,11 @@ public class ConnectService extends Service {
 
     }
 
-    private void socketAction (String type) {
+    private void socketAction (String type, String message) {
         Log.i("LocalService", type);
+        if (type.equals("Open")) {
+            Intent i = new Intent("SocketAction").putExtra("message", "Socket is about to open").putExtra("event", "open");
+            this.sendBroadcast(i);
+        }
     }
 }
