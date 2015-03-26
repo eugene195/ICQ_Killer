@@ -93,17 +93,7 @@ public class ChatFragment extends Fragment {
     }
 
     public void receiveMsg (String message) {
-        try {
-            JSONObject json = new JSONObject(message);
-            JSONObject data = new JSONObject((String) json.get("data"));
-            Message msg = new Message();
-            HashMap<String, Object> msgParams = new HashMap<>();
-            msgParams.put("from", data.get("from"));
-            msgParams.put("whom", myName);
-            msgParams.put("message", data.get("from"));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+
     }
 
     public void setNames(String my, String dest) {
@@ -112,13 +102,15 @@ public class ChatFragment extends Fragment {
         }
 
     private void addMsg () {
-        Message msg = new Message();
-        HashMap<String, Object> msgParams = new HashMap<>();
-        msgParams.put("from", myName);
-        msgParams.put("whom", destName);
-        msgParams.put("message", msgBox.getText().toString());
-        ((ClientActivity)getActivity()).send(msg.create(msgParams));
-        msgList.add(msg);
+        if (!msgBox.getText().toString().equals("")) {
+            Message msg = new Message();
+            HashMap<String, Object> msgParams = new HashMap<>();
+            msgParams.put("from", myName);
+            msgParams.put("whom", destName);
+            msgParams.put("message", msgBox.getText().toString());
+            ((ClientActivity) getActivity()).send(msg.create(msgParams));
+            msgList.add(msg);
+        }
     }
 
     private void recreateAdapter () {

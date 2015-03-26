@@ -10,6 +10,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,7 +57,6 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item, container, false);
-
         mListView = (AbsListView) view.findViewById(android.R.id.list);
         mListView.setAdapter(clientAdapter);
         mListView.setOnItemClickListener(this);
@@ -77,8 +77,7 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     }
 
     public void setEmptyText(CharSequence emptyText) {
-//        TODO NPE
-        ((ClientActivity)getActivity()).showMessage("No clients");
+        ((ClientActivity)getActivity()).showMessage((String) emptyText);
     }
 
     public interface OnItemSelectedListener {
@@ -96,10 +95,28 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
         }
     }
 
+    private void recreateAdapter () {
+        mListView = (AbsListView) getView().findViewById(android.R.id.list);
+        if (mListView != null) {
+            clientAdapter = new ArrayAdapter<>(getActivity(),
+                    android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
+            mListView.setAdapter(clientAdapter);
+            mListView.setOnItemClickListener(this);
+        }
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putSerializable(CLIENT_LIST, clientArray);
         outState.putString(MY_NAME, nickname);
+    }
+
+    public void setClients (String [] newClientArray) {
+        clientArray = newClientArray;
+        if (clientArray.length == 0)
+            setEmptyText("Client list is empty");
+        else
+            recreateAdapter();
     }
 }

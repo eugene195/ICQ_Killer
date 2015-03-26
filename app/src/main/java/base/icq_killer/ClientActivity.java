@@ -11,20 +11,23 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import base.icq_killer.fragments.ChatFragment;
 import base.icq_killer.fragments.ClientListFragment;
+import entities.Message;
 import entities.Sendable;
 
 
@@ -40,7 +43,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     ClientListFragment clf;
     ChatFragment ctf;
-    private String nickname;
+    private String myName;
     private String [] clientArray;
 
     private ConnectService mBoundService;
@@ -53,12 +56,12 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState != null)
-            nickname = savedInstanceState.getString(MY_NAME);
+            myName = savedInstanceState.getString(MY_NAME);
         Intent intent = getIntent();
         fetchParams(intent);
 
-        clf = ClientListFragment.newInstance(nickname, clientArray);
-        ctf = ChatFragment.newInstance(nickname);
+        clf = ClientListFragment.newInstance(myName, clientArray);
+        ctf = ChatFragment.newInstance(myName);
         setContentView(R.layout.activity_client);
 
         orientation = getResources().getConfiguration().orientation;
@@ -71,7 +74,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     private void serviceConnect () {
         Intent intent = new Intent(this, ConnectService.class).putExtra(ConnectService.ACTION, ConnectService.INIT_CONNECTION);
-        intent.putExtra(ConnectService.NICKNAME, nickname);
+        intent.putExtra(ConnectService.NICKNAME, myName);
         startService(intent);
         doBindService();
 
@@ -85,23 +88,13 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
                 String event = intent.getStringExtra("event");
                 Log.i("SocketAction", event + " = " + message);
 
-                if (event.equals("open"))
-                    if (!handshakeDone) {
-                        JSONObject handshake = new JSONObject(), data = new JSONObject();
-                        try {
-                            data.put("user", nickname);
-                            handshake.put(ConnectService.ACTION, "handshake").put("data", data);
-                            mBoundService.send(handshake.toString());
-                            handshakeDone = true;
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                else if (event.equals("message")) {
-//                    showMessage(message);
+                switch (event) {
+                    case "open":
+                        break;
+                    case "message":
                         messageReceived(message);
+                        break;
                 }
-
             }
         };
         this.registerReceiver(mReceiver, intentFilter);
@@ -112,7 +105,58 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     }
 
     private void messageReceived (String message) {
+        try {
+            JSONObject json = new JSONObject(message);
+            String action = json.getString("action");
+            JSONObject data = (JSONObject) json.get("data");
 
+            switch (action) {
+                case "user_come_in":
+                    String in = data.getString("nickname");
+                    if ((!in.equals("")) && (!findClient(in)))
+                        clientArray = addClient(clientArray, in);
+                    clf.setClients(clientArray);
+                    break;
+                case "message":
+                    Message msg = new Message();
+                    HashMap<String, Object> msgParams = new HashMap<>();
+                    msgParams.put("from", data.get("from"));
+                    msgParams.put("whom", myName);
+                    msgParams.put("message", data.get("from"));
+                    break;
+                case "user_went_out":
+                    String out = data.getString("nickname");
+                    if (findClient(out))
+                        clientArray = removeClient(clientArray, out);
+                    clf.setClients(clientArray);
+                    break;
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean findClient (String client) {
+        for (String aClientArray : clientArray)
+            if (aClientArray.equals(client))
+                return true;
+        return false;
+    }
+
+    private String[] removeClient(String[] input, String deleteMe) {
+        List <String> result = new LinkedList<>();
+        for(String item : input)
+            if(!deleteMe.equals(item))
+                result.add(item);
+        return result.toArray(input);
+    }
+
+    private String[] addClient(String[] input, String addMe) {
+        List <String> result = new LinkedList<>();
+        Collections.addAll(result, input);
+        result.add(addMe);
+        return result.toArray(input);
     }
 
     public void send (Sendable object) {
@@ -125,7 +169,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     @Override
     public void onClientSelected(String dest) {
-        ctf.setNames(nickname, dest);
+        ctf.setNames(myName, dest);
         if (orientation == ORIENTATION_PORTRAIT)
             showFragment(ctf);
     }
@@ -140,7 +184,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(MY_NAME, nickname);
+        outState.putString(MY_NAME, myName);
 
         ChatFragment fragment = (ChatFragment) getFragmentManager()
                 .findFragmentById(R.id.chatFragment);
@@ -165,7 +209,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     }
 
     private void fetchParams (Intent intent) {
-        nickname = intent.getStringExtra(MY_NAME);
+        myName = intent.getStringExtra(MY_NAME);
         ArrayList<String> clients = (ArrayList<String>) intent.getSerializableExtra(CLIENT_LIST);
         if (clients != null) {
             clientArray = new String[clients.size()];
