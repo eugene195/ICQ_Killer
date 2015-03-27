@@ -1,6 +1,7 @@
 package base.icq_killer.fragments;
 
 import android.app.Fragment;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 
@@ -9,6 +10,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -17,6 +19,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +30,8 @@ import base.icq_killer.MessageArrayAdapter;
 import base.icq_killer.R;
 import entities.BaseEntity;
 import entities.Message;
+import utils.FileUploader;
+import utils.ProgressBarViewer;
 
 public class ChatFragment extends Fragment {
     private static final String DESTINATION = "destination";
@@ -61,13 +66,31 @@ public class ChatFragment extends Fragment {
             msgList = (ArrayList<Message>) savedInstanceState.getSerializable(MESSAGE_LIST);
         }
         recreateAdapter();
+
         msgBox = (EditText) getView().findViewById(R.id.messageBox);
+        Button sendBtn = (Button) getView().findViewById(R.id.sendButton);
+        sendBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addMsg();
+                msgBox.setText("");
+            }
+        });
+
+        Button uploadBtn = (Button) getView().findViewById(R.id.uploadBtn);
+        uploadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new UploadFile().execute("/sdcard/Download/AlgorithmsLisp");
+            }
+        });
+
         msgBox.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     addMsg();
                     msgBox.setText("");
-                    return true;
+                    return false;
                 }
                 return false;
             }
@@ -92,8 +115,9 @@ public class ChatFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_chat, container, false);
     }
 
-    public void receiveMsg (String message) {
-
+    public void receiveMsg (Message message) {
+        msgList.add(message);
+        recreateAdapter();
     }
 
     public void setNames(String my, String dest) {
@@ -114,10 +138,13 @@ public class ChatFragment extends Fragment {
     }
 
     private void recreateAdapter () {
-        listView = (ListView) getView().findViewById(R.id.chatView);
-        if (listView != null) {
-            adapter = new MessageArrayAdapter(getActivity(), R.layout.listitem_chat, msgList, myName);
-            listView.setAdapter(adapter);
+        View curView = getView();
+        if (curView != null) {
+            listView = (ListView) curView.findViewById(R.id.chatView);
+            if (listView != null) {
+                adapter = new MessageArrayAdapter(getActivity(), R.layout.listitem_chat, msgList, myName);
+                listView.setAdapter(adapter);
+            }
         }
     }
 
@@ -133,6 +160,25 @@ public class ChatFragment extends Fragment {
     public void onDestroyView() {
         msgList.clear();
         super.onDestroyView();
+    }
+
+    private class UploadFile extends AsyncTask<String, Void, String> {
+        public UploadFile() {}
+        private int responseCode;
+        protected void onPreExecute() {
+            ProgressBarViewer.view(getActivity(), "File uploading");
+        }
+        protected String doInBackground(String ... urls) {
+            String filename = urls[0];
+            responseCode = FileUploader.upload(filename, myName, destName);
+            return "";
+        }
+        protected void onPostExecute(String result) {
+            Log.i("LocalService", "File uploaded");
+            ProgressBarViewer.hide();
+            if (responseCode != 200)
+                ((ClientActivity) getActivity()).showMessage("File upload error");
+        }
     }
 
 }

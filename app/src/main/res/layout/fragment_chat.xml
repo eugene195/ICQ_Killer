@@ -41,9 +41,36 @@
             android:id="@+id/messageBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentRight="true"
+
             android:ems="10"
-            android:inputType="text" />
+            android:inputType="text"
+            android:layout_toLeftOf="@+id/sendButton" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/send_btn_text"
+
+            android:id="@+id/sendButton"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignBottom="@+id/messageBox"
+            />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/upload_btn_text"
+            android:id="@+id/uploadBtn"
+            android:layout_alignParentLeft="true"
+            android:layout_alignBottom="@+id/messageBox"
+            android:layout_toStartOf="@+id/messageBox"
+            android:layout_toLeftOf="@+id/messageBox"
+
+            />
     </RelativeLayout>
+
 </RelativeLayout>

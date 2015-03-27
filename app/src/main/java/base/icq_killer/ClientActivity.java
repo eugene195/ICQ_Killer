@@ -122,7 +122,9 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
                     HashMap<String, Object> msgParams = new HashMap<>();
                     msgParams.put("from", data.get("from"));
                     msgParams.put("whom", myName);
-                    msgParams.put("message", data.get("from"));
+                    msgParams.put("message", data.get("message"));
+                    msg.create(msgParams);
+                    ctf.receiveMsg(msg);
                     break;
                 case "user_went_out":
                     String out = data.getString("nickname");

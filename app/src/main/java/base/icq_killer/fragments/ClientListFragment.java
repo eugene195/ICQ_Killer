@@ -50,7 +50,7 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
             setEmptyText("Client list is empty");
         else
             clientAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
+                    android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
     }
 
     @Override
@@ -96,13 +96,10 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     }
 
     private void recreateAdapter () {
-        mListView = (AbsListView) getView().findViewById(android.R.id.list);
-        if (mListView != null) {
-            clientAdapter = new ArrayAdapter<>(getActivity(),
-                    android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
-            mListView.setAdapter(clientAdapter);
-            mListView.setOnItemClickListener(this);
-        }
+        clientAdapter = new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
+        mListView.setAdapter(clientAdapter);
+        mListView.setOnItemClickListener(this);
     }
 
     @Override
@@ -116,7 +113,11 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
         clientArray = newClientArray;
         if (clientArray.length == 0)
             setEmptyText("Client list is empty");
-        else
-            recreateAdapter();
+        else {
+            View curView = getView();
+            if (curView != null)
+                if (curView.findViewById(android.R.id.list) != null)
+                    recreateAdapter();
+        }
     }
 }

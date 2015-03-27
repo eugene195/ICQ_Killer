@@ -30,7 +30,6 @@ import utils.ProgressBarViewer;
 
 public class MainActivity extends Activity {
 
-    private Button buttonSignIn;
     private User user = new User();
     private BaseProto protocol = new RestProto();
 
@@ -40,7 +39,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        buttonSignIn = (Button) findViewById(R.id.loginButton);
+        Button buttonSignIn = (Button) findViewById(R.id.loginButton);
         buttonSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -51,7 +50,7 @@ public class MainActivity extends Activity {
     }
 
     private class GetUserName extends AsyncTask<String, Void, String> {
-        private static final String progressBarMsg = "Searching for available name";
+        private static final String progressBarMsg = "Searching for available names";
         private static final String errorMsg = "User already exists";
         private boolean success = false;
         public GetUserName() {}
