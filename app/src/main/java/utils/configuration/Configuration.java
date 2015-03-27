@@ -1,12 +1,18 @@
 package utils.configuration;
 
+
+import base.icq_killer.loggers.ImmediateLogger;
+import base.icq_killer.loggers.LazyLogger;
+import base.icq_killer.loggers.Logger;
+
 /**
  * Created by eugene on 27.03.15.
  */
 public class Configuration {
+    public static Logger logger = LazyLogger.getInstance("AndroidApp");
     public static String HTTP_SERVER_URL = "http://immense-bayou-7299.herokuapp.com";
     public static String WS_SERVER_URL = "ws://immense-bayou-7299.herokuapp.com/send";
-    public static String LOG_FILENAME = "/Download/logs.txt";
+    public static String LOG_FILENAME = "/Download/logs1.txt";
     public static class Login {
 //        Default value
         public static String URL = "/user/create";
