@@ -23,7 +23,6 @@ public class ConfigLoader {
     private final Map<String, String> sections = new HashMap<>();
     private static Resources resources;
     private static class LazyHolder {
-        private static final String configPath = "conf/config.xml";
         private static final ConfigLoader INSTANCE = new ConfigLoader();
     }
 
@@ -34,6 +33,7 @@ public class ConfigLoader {
 
     private ConfigLoader() {
         sections.put("protocol", resources.getString(R.string.protocol));
+        sections.put("log_filename", resources.getString(R.string.log_filename));
     }
 
     public String getString (String key) {

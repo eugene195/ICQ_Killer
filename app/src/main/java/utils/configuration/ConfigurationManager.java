@@ -10,6 +10,9 @@ public class ConfigurationManager {
     public static void configure (Resources resources) {
         ConfigLoader config = ConfigLoader.getInstance(resources);
         String protocol = config.getString("protocol");
+
+        Configuration.LOG_FILENAME = config.getString("log_filename");
+
         if (protocol.equals("SOAP")) {
             configureBySOAP();
         }

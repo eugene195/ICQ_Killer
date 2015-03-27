@@ -1,6 +1,9 @@
 package base.icq_killer.fragments;
 
+import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -18,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import base.icq_killer.ClientActivity;
+import base.icq_killer.FileSelectActivity;
 import base.icq_killer.MessageArrayAdapter;
 import base.icq_killer.R;
 import entities.Message;
@@ -31,6 +35,9 @@ public class ChatFragment extends Fragment {
     private static final String SAVE_DEST = "dest";
     private static final String SAVE_MY = "my";
     private static final String SAVE_MSG_LST = "msglist";
+
+    static final int PICK_FILE_REQUEST = 1;
+
 
     private static String destName = "";
     private static String myName = "";
@@ -66,7 +73,8 @@ public class ChatFragment extends Fragment {
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addMsg();
+                String text = msgBox.getText().toString();
+                addMsg(text, Message.PLAINTEXT_TYPE);
                 msgBox.setText("");
             }
         });
@@ -75,14 +83,16 @@ public class ChatFragment extends Fragment {
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new UploadFile().execute("/sdcard/Download/AlgorithmsLisp");
+                Intent intent = new Intent(getActivity().getApplicationContext(), FileSelectActivity.class);
+                startActivityForResult(intent, PICK_FILE_REQUEST);
             }
         });
 
         msgBox.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    addMsg();
+                    String text = msgBox.getText().toString();
+                    addMsg(text, Message.PLAINTEXT_TYPE);
                     msgBox.setText("");
                     return false;
                 }
@@ -110,8 +120,12 @@ public class ChatFragment extends Fragment {
     }
 
     public void receiveMsg (Message message) {
-        msgList.add(message);
-        recreateAdapter();
+        if (message.getFrom().equals(destName)) {
+            msgList.add(message);
+            recreateAdapter();
+        }
+        else
+            ((ClientActivity) getActivity()).showMessage(getResources().getString(R.string.wrong_abonent) + " " + message.getFrom());
     }
 
     public void setNames(String my, String dest) {
@@ -119,16 +133,23 @@ public class ChatFragment extends Fragment {
             destName = dest;
         }
 
-    private void addMsg () {
-        String text = msgBox.getText().toString();
+    private void addMsg (String text, int type) {
         if (!text.equals("")) {
             Message msg = new Message();
             HashMap<String, Object> msgParams = new HashMap<>();
             msgParams.put(Configuration.SocketAction.Message.ClientToServer.from, myName);
             msgParams.put(Configuration.SocketAction.Message.ClientToServer.to, destName);
             msgParams.put(Configuration.SocketAction.Message.ClientToServer.message, text);
-            ((ClientActivity) getActivity()).send(msg.create(msgParams));
-            msgList.add(msg);
+            switch (type) {
+                case Message.FILE_TYPE:
+                    new UploadFile().execute(text);
+                    break;
+                case Message.PLAINTEXT_TYPE:
+                    ((ClientActivity) getActivity()).send(msg.create(msgParams));
+                    msgList.add(msg);
+                    break;
+            }
+
         }
     }
 
@@ -174,6 +195,17 @@ public class ChatFragment extends Fragment {
                 ((ClientActivity) getActivity()).showMessage(getResources().getString(R.string.file_upload_error));
             else
                 ((ClientActivity) getActivity()).showMessage(getResources().getString(R.string.file_upload_success));
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_FILE_REQUEST) {
+            if (resultCode == Activity.RESULT_OK) {
+                String fileUri = data.getStringExtra("URI");
+                addMsg(fileUri, Message.FILE_TYPE);
+                ((ClientActivity) getActivity()).showMessage(fileUri);
+            }
         }
     }
 

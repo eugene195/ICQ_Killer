@@ -19,6 +19,9 @@ public class Message implements BaseEntity {
     public final String TO = "whom";
     public final String MESSAGE = "message";
 
+    public static final int FILE_TYPE = 0;
+    public static final int PLAINTEXT_TYPE = 1;
+
     public Sendable create(HashMap<String, Object> parameters) {
         String url ="/create";
         ArrayList <BasicNameValuePair> paramList = new ArrayList<>();

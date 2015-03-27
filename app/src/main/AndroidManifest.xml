@@ -3,6 +3,7 @@
     package="base.icq_killer" >
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -28,6 +29,15 @@
             android:enabled="true"
             android:exported="true" >
         </service>
+
+        <activity
+            android:name=".FileSelectActivity"
+            android:label="@string/title_activity_file_select" >
+        </activity>
+        <activity
+            android:name=".LogViewActivity"
+            android:label="@string/title_activity_log_view" >
+        </activity>
     </application>
 
 </manifest>

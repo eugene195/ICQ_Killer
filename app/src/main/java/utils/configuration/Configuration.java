@@ -6,6 +6,7 @@ package utils.configuration;
 public class Configuration {
     public static String HTTP_SERVER_URL = "http://immense-bayou-7299.herokuapp.com";
     public static String WS_SERVER_URL = "ws://immense-bayou-7299.herokuapp.com/send";
+    public static String LOG_FILENAME = "/Download/logs.txt";
     public static class Login {
 //        Default value
         public static String URL = "/user/create";

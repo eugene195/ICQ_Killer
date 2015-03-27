@@ -12,7 +12,7 @@ import java.net.URL;
  * Created by eugene on 27.03.15.
  */
 public class FileUploader {
-    private static final String upLoadServerUri = "http://immense-bayou-7299.herokuapp.com/upload";
+    private static final String upLoadServerUri = "http://immense-bayou-7299.herokuapp.com/file/create";
 
     public static int upload (String filename, String from, String to) {
         HttpURLConnection conn;
@@ -41,7 +41,7 @@ public class FileUploader {
             conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("ENCTYPE", "multipart/form-data");
             conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-            conn.setRequestProperty("file", filename);
+            conn.setRequestProperty("file-0", filename);
             conn.setRequestProperty("whom", to);
             conn.setRequestProperty("nickname", from);
             dos = new DataOutputStream(conn.getOutputStream());
