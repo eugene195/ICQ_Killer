@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 
 
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,29 +13,24 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import base.icq_killer.ClientActivity;
-import base.icq_killer.MainActivity;
 import base.icq_killer.MessageArrayAdapter;
 import base.icq_killer.R;
-import entities.BaseEntity;
 import entities.Message;
+import utils.configuration.Configuration;
 import utils.FileUploader;
 import utils.ProgressBarViewer;
 
 public class ChatFragment extends Fragment {
-    private static final String DESTINATION = "destination";
-    private static final String NICKNAME = "nickname";
-    private static final String MESSAGE_LIST = "msglist";
+    public static String name = "ChatFragment";
+
+    private static final String SAVE_DEST = "dest";
+    private static final String SAVE_MY = "my";
+    private static final String SAVE_MSG_LST = "msglist";
 
     private static String destName = "";
     private static String myName = "";
@@ -61,9 +55,9 @@ public class ChatFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         if (savedInstanceState != null) {
-            destName = savedInstanceState.getString(DESTINATION);
-            myName = savedInstanceState.getString(NICKNAME);
-            msgList = (ArrayList<Message>) savedInstanceState.getSerializable(MESSAGE_LIST);
+            destName = savedInstanceState.getString(SAVE_DEST);
+            myName = savedInstanceState.getString(SAVE_MY);
+            msgList = (ArrayList<Message>) savedInstanceState.getSerializable(SAVE_MSG_LST);
         }
         recreateAdapter();
 
@@ -126,12 +120,13 @@ public class ChatFragment extends Fragment {
         }
 
     private void addMsg () {
-        if (!msgBox.getText().toString().equals("")) {
+        String text = msgBox.getText().toString();
+        if (!text.equals("")) {
             Message msg = new Message();
             HashMap<String, Object> msgParams = new HashMap<>();
-            msgParams.put("from", myName);
-            msgParams.put("whom", destName);
-            msgParams.put("message", msgBox.getText().toString());
+            msgParams.put(Configuration.SocketAction.Message.ClientToServer.from, myName);
+            msgParams.put(Configuration.SocketAction.Message.ClientToServer.to, destName);
+            msgParams.put(Configuration.SocketAction.Message.ClientToServer.message, text);
             ((ClientActivity) getActivity()).send(msg.create(msgParams));
             msgList.add(msg);
         }
@@ -151,9 +146,9 @@ public class ChatFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(DESTINATION, destName);
-        outState.putString(NICKNAME, myName);
-        outState.putSerializable(MESSAGE_LIST, msgList);
+        outState.putString(SAVE_DEST, destName);
+        outState.putString(SAVE_MY, myName);
+        outState.putSerializable(SAVE_MSG_LST, msgList);
     }
 
     @Override
@@ -166,7 +161,7 @@ public class ChatFragment extends Fragment {
         public UploadFile() {}
         private int responseCode;
         protected void onPreExecute() {
-            ProgressBarViewer.view(getActivity(), "File uploading");
+            ProgressBarViewer.view(getActivity(), getResources().getString(R.string.file_upload_progressbar));
         }
         protected String doInBackground(String ... urls) {
             String filename = urls[0];
@@ -174,10 +169,11 @@ public class ChatFragment extends Fragment {
             return "";
         }
         protected void onPostExecute(String result) {
-            Log.i("LocalService", "File uploaded");
             ProgressBarViewer.hide();
             if (responseCode != 200)
-                ((ClientActivity) getActivity()).showMessage("File upload error");
+                ((ClientActivity) getActivity()).showMessage(getResources().getString(R.string.file_upload_error));
+            else
+                ((ClientActivity) getActivity()).showMessage(getResources().getString(R.string.file_upload_success));
         }
     }
 

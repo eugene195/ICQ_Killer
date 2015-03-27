@@ -25,56 +25,46 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import entities.Sendable;
+import utils.configuration.Configuration;
 
 public class ConnectService extends Service {
 
-    public static final String ACTION = "action";
+    public static final String SERVICE_TYPE = "SocketAction";
     public static final String NICKNAME = "nickname";
-    public static final String SEND_MESSAGE = "send_message";
-    public static final String INIT_CONNECTION = "init_ws";
 
     private WSClient client;
     private String myName;
+
     private final IBinder mBinder = new LocalBinder();
-
-    public void onCreate() {
-        super.onCreate();
+    public IBinder onBind(Intent intent) {
+        return mBinder;
     }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-
-        String action = intent.getStringExtra(ACTION);
-        myName = intent.getStringExtra(NICKNAME);
-
-        if (action.equals(INIT_CONNECTION)) {
-            try {
-                client = new WSClient();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        new ConnectWs().execute("");
-
-        Log.i("LocalService", "Received start id " + startId + ": " + intent);
-        return START_STICKY;
-    }
-
-    @Override
-    public void onDestroy() {
-        Toast.makeText(this, "stop service", Toast.LENGTH_SHORT).show();
-    }
-
     public class LocalBinder extends Binder {
         ConnectService getService() {
             return ConnectService.this;
         }
     }
 
-    public IBinder onBind(Intent intent) {
-        return mBinder;
+    public void onCreate() {
+        super.onCreate();
+    }
+    @Override
+    public void onDestroy() {
+        Toast.makeText(this, "stop service", Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        myName = intent.getStringExtra(NICKNAME);
+        try {
+            client = new WSClient();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        new ConnectWs().execute("");
+        Log.i(SERVICE_TYPE, "Received start id " + startId + ": " + intent);
+        return START_STICKY;
+    }
 
     public void send (Sendable object) throws JSONException, IOException {
         if (client.isSuccess()) {
@@ -82,13 +72,9 @@ public class ConnectService extends Service {
             ArrayList<BasicNameValuePair> parameters = object.getParams();
             for (BasicNameValuePair pair : parameters)
                 data.put(pair.getName(), pair.getValue());
-            message.put(ACTION, "message").put("data", data);
-            send(message.toString());
+            message.put(Configuration.SocketAction.action, Configuration.SocketAction.Message.action).put(Configuration.SocketAction.data, data);
+            new SendWs().execute(message.toString());
         }
-    }
-
-    public void send (String message) {
-        new SendWs().execute(message);
     }
 
     private class ConnectWs extends AsyncTask<String, Void, String> {
@@ -98,7 +84,7 @@ public class ConnectService extends Service {
             return "";
         }
         protected void onPostExecute(String result) {
-            Log.i("LocalService", "Connected WS");
+            Log.i(SERVICE_TYPE, "Connected WS");
         }
     }
 
@@ -114,7 +100,7 @@ public class ConnectService extends Service {
             return "";
         }
         protected void onPostExecute(String result) {
-            Log.i("LocalService", "Message sent");
+            Log.i(SERVICE_TYPE, "Message sent");
         }
     }
 
@@ -123,7 +109,7 @@ public class ConnectService extends Service {
         private WebSocket.Connection connection;
         private WebSocketClient client;
         private boolean successConn = false;
-        private final String wsUrl = "ws://immense-bayou-7299.herokuapp.com/send";
+        private final String wsUrl = Configuration.WS_SERVER_URL;
 
 
         public WSClient() throws Exception {
@@ -142,40 +128,35 @@ public class ConnectService extends Service {
 
         public void connect() {
             try {
-//                connection = client.open(new URI(wsUrl + "?nickname=" + myName), new WebSocket.OnTextMessage() {
-                connection = client.open(new URI(wsUrl + "?nickname=" + myName), new WebSocket.OnTextMessage() {
+                connection = client.open(new URI(wsUrl + "?" + Configuration.SocketAction.connparameter + "=" + myName), new WebSocket.OnTextMessage() {
                     public void onOpen(Connection connection) {
                         successConn = true;
-                        socketAction("Open", "");
+                        socketAction(ClientActivity.EVENT_OPEN, "");
                     }
-
                     public void onClose(int closeCode, String message) {
                         successConn = false;
-                        socketAction("Close", "");
+                        socketAction("close", "");
                     }
-
                     public void onMessage(String data) {
-                        socketAction("Message", data);
+                        socketAction(ClientActivity.EVENT_MSG, data);
                     }
                 }).get(5, TimeUnit.SECONDS);
-
             } catch (InterruptedException | ExecutionException | TimeoutException | IOException | URISyntaxException e) {
                 e.printStackTrace();
             }
         }
-
-
     }
 
     private void socketAction (String type, String message) {
-        Log.i("LocalService", type);
-        if (type.equals("Open")) {
-            Intent i = new Intent("SocketAction").putExtra("message", "Socket is about to open").putExtra("event", "open");
-            this.sendBroadcast(i);
+        Log.i(SERVICE_TYPE, type);
+        Intent i = new Intent(SERVICE_TYPE);
+        switch (type) {
+            case ClientActivity.EVENT_OPEN:
+                i.putExtra(ClientActivity.INFO, "Socket is about to open").putExtra(ClientActivity.EVENT, ClientActivity.EVENT_OPEN);
+                break;
+            case ClientActivity.EVENT_MSG:
+                i.putExtra(ClientActivity.INFO, message).putExtra(ClientActivity.EVENT, ClientActivity.EVENT_MSG);
         }
-        else if (type.equals("Message")) {
-            Intent i = new Intent("SocketAction").putExtra("message", message).putExtra("event", "message");
-            this.sendBroadcast(i);
-        }
+        this.sendBroadcast(i);
     }
 }

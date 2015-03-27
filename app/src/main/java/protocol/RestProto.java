@@ -1,19 +1,12 @@
 package protocol;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import entities.BaseEntity;
 import entities.Sendable;
+import utils.configuration.Configuration;
 import utils.HttpRequester;
 
 
@@ -21,7 +14,7 @@ import utils.HttpRequester;
  * Created by eugene on 11.03.15.
  */
 public class RestProto implements BaseProto {
-    private final String serverUrl = "http://immense-bayou-7299.herokuapp.com";
+    private final String serverUrl = Configuration.HTTP_SERVER_URL;
 
 
     @Override

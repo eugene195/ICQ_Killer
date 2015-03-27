@@ -12,7 +12,22 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_chat">ChatActivity</string>
 
+    <!--MAIN Activity-->
+    <string name="user_exists_msg">User already exists</string>
+    <string name="name_check_progressbar">Searching for available names</string>
+
     <string name="send_btn_text">Send</string>
     <string name="upload_btn_text">File</string>
+
+    <string name="file_upload_progressbar">File uploading</string>
+    <string name="file_upload_success">File uploaded</string>
+    <string name="file_upload_error">File upload error</string>
+
+
+    <!--CONFIGS-->
+    <string name="protocol">REST</string>
+    <string name="strategy">Settings</string>
+
+
 
 </resources>

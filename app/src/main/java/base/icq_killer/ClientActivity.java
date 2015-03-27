@@ -29,6 +29,7 @@ import base.icq_killer.fragments.ChatFragment;
 import base.icq_killer.fragments.ClientListFragment;
 import entities.Message;
 import entities.Sendable;
+import utils.configuration.Configuration;
 
 
 public class ClientActivity extends FragmentActivity implements ClientListFragment.OnItemSelectedListener {
@@ -36,20 +37,22 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     public static final String MY_NAME = "my_name";
     public static final String CLIENT_LIST = "client_list";
 
+    public static final String EVENT = "event";
+    public static final String EVENT_OPEN = "open";
+    public static final String EVENT_MSG = "message";
+    public static final String INFO = "info";
+
     public static final int ORIENTATION_PORTRAIT = 1;
     public static final int ORIENTATION_LANDSCAPE = 2;
-    private static final String BROADCAST_ACTION = "get_message";
-    private int orientation = 1;
+    private int orientation = ORIENTATION_PORTRAIT;
 
-    ClientListFragment clf;
-    ChatFragment ctf;
+    private ClientListFragment clf;
+    private ChatFragment ctf;
     private String myName;
     private String [] clientArray;
 
     private ConnectService mBoundService;
     private BroadcastReceiver mReceiver;
-
-    private boolean handshakeDone = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,26 +76,24 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     }
 
     private void serviceConnect () {
-        Intent intent = new Intent(this, ConnectService.class).putExtra(ConnectService.ACTION, ConnectService.INIT_CONNECTION);
+        Intent intent = new Intent(this, ConnectService.class);
         intent.putExtra(ConnectService.NICKNAME, myName);
         startService(intent);
         doBindService();
 
-        IntentFilter intentFilter = new IntentFilter(
-                "SocketAction");
+        IntentFilter intentFilter = new IntentFilter(ConnectService.SERVICE_TYPE);
         mReceiver = new BroadcastReceiver() {
-
             @Override
             public void onReceive(Context context, Intent intent) {
-                String message = intent.getStringExtra("message");
-                String event = intent.getStringExtra("event");
-                Log.i("SocketAction", event + " = " + message);
+                String info = intent.getStringExtra(INFO);
+                String event = intent.getStringExtra(EVENT);
+                Log.i(ConnectService.SERVICE_TYPE, event + " = " + info);
 
                 switch (event) {
-                    case "open":
+                    case EVENT_OPEN:
                         break;
-                    case "message":
-                        messageReceived(message);
+                    case EVENT_MSG:
+                        messageReceived(info);
                         break;
                 }
             }
@@ -107,33 +108,30 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     private void messageReceived (String message) {
         try {
             JSONObject json = new JSONObject(message);
-            String action = json.getString("action");
-            JSONObject data = (JSONObject) json.get("data");
+            String action = json.getString(Configuration.SocketAction.action);
+            JSONObject data = (JSONObject) json.get(Configuration.SocketAction.data);
 
-            switch (action) {
-                case "user_come_in":
-                    String in = data.getString("nickname");
-                    if ((!in.equals("")) && (!findClient(in)))
-                        clientArray = addClient(clientArray, in);
-                    clf.setClients(clientArray);
-                    break;
-                case "message":
-                    Message msg = new Message();
-                    HashMap<String, Object> msgParams = new HashMap<>();
-                    msgParams.put("from", data.get("from"));
-                    msgParams.put("whom", myName);
-                    msgParams.put("message", data.get("message"));
-                    msg.create(msgParams);
-                    ctf.receiveMsg(msg);
-                    break;
-                case "user_went_out":
-                    String out = data.getString("nickname");
-                    if (findClient(out))
-                        clientArray = removeClient(clientArray, out);
-                    clf.setClients(clientArray);
-                    break;
+            if (action.equals(Configuration.SocketAction.ComeIn.action)) {
+                String in = data.getString(Configuration.SocketAction.ComeIn.ServerToClient.nickname);
+                if ((!in.equals("")) && (!findClient(in)))
+                    clientArray = addClient(clientArray, in);
+                clf.setClients(clientArray);
             }
-
+            else if (action.equals(Configuration.SocketAction.Message.action)) {
+                Message msg = new Message();
+                HashMap<String, Object> msgParams = new HashMap<>();
+                msgParams.put(Configuration.SocketAction.Message.ServerToClient.from, data.get(Configuration.SocketAction.Message.ServerToClient.from));
+                msgParams.put(Configuration.SocketAction.Message.ServerToClient.to, myName);
+                msgParams.put(Configuration.SocketAction.Message.ServerToClient.message, data.get(Configuration.SocketAction.Message.ServerToClient.message));
+                msg.create(msgParams);
+                ctf.receiveMsg(msg);
+            }
+            else if (action.equals(Configuration.SocketAction.GoOut.action)) {
+                String out = data.getString(Configuration.SocketAction.GoOut.ServerToClient.nickname);
+                if (findClient(out))
+                    clientArray = removeClient(clientArray, out);
+                clf.setClients(clientArray);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -191,13 +189,12 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
         ChatFragment fragment = (ChatFragment) getFragmentManager()
                 .findFragmentById(R.id.chatFragment);
         if (fragment != null)
-            getFragmentManager().putFragment(outState, "ChatFragment", fragment);
-
+            getFragmentManager().putFragment(outState, ChatFragment.name, fragment);
 
         ClientListFragment clientListFragment = (ClientListFragment) getFragmentManager()
                 .findFragmentById(R.id.clientFragment);
         if (clientListFragment != null)
-            getFragmentManager().putFragment(outState, "ClientListFragment", clientListFragment);
+            getFragmentManager().putFragment(outState, ClientListFragment.name, clientListFragment);
     }
 
     @Override
@@ -222,35 +219,20 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     private ServiceConnection mConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
-            // This is called when the connection with the service has been
-            // established, giving us the service object we can use to
-            // interact with the service.  Because we have bound to a explicit
-            // service that we know is running in our own process, we can
-            // cast its IBinder to a concrete class and directly access it.
             mBoundService = ((ConnectService.LocalBinder)service).getService();
         }
 
         public void onServiceDisconnected(ComponentName className) {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
-            // Because it is running in our same process, we should never
-            // see this happen.
             mBoundService = null;
         }
     };
 
-    void doBindService() {
-        // Establish a connection with the service.  We use an explicit
-        // class name because we want a specific service implementation that
-        // we know will be running in our own process (and thus won't be
-        // supporting component replacement by other applications).
+    private void doBindService() {
         bindService(new Intent(ClientActivity.this,
                 ConnectService.class), mConnection, Context.BIND_AUTO_CREATE);
     }
 
-    void doUnbindService() {
+    private void doUnbindService() {
         unbindService(mConnection);
     }
-
-
 }

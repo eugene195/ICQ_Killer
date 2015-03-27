@@ -2,32 +2,28 @@ package entities;
 
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import protocol.BaseProto;
+import utils.configuration.Configuration;
 
 /**
  * Created by eugene on 11.03.15.
  */
 public class User implements BaseEntity {
 
-    private final String URL = "/user";
-    public final String NICKNAME = "nickname";
+    public final String NICKNAME = Configuration.Login.ClientToServer.nickname;
     private Boolean successLogin = false;
     private String nickname;
     private JSONArray clients = new JSONArray();
 
     public Sendable create(HashMap<String, Object> parameters) {
         String name = (String) parameters.get(NICKNAME);
-        String url ="/create";
         ArrayList <BasicNameValuePair> paramList = new ArrayList<>();
         paramList.add(new BasicNameValuePair(NICKNAME, name));
         nickname = name;
-        return new Sendable(paramList, URL + url);
+        return new Sendable(paramList, Configuration.Login.URL);
     }
 
 

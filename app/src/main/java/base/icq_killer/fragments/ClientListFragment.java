@@ -10,19 +10,15 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import base.icq_killer.ClientActivity;
 import base.icq_killer.R;
 
 public class ClientListFragment extends Fragment implements AbsListView.OnItemClickListener {
+    public static String name = "ClientListFragment";
 
-    public static final String MY_NAME = "my_name";
-    public static final String CLIENT_LIST = "client_list";
+    public static final String SAVE_CLIENT = "client_list";
 
-    private static String nickname;
     private static String [] clientArray;
     private OnItemSelectedListener listener;
 
@@ -31,7 +27,6 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
 
     public static ClientListFragment newInstance(String name, String [] clients) {
         ClientListFragment fragment = new ClientListFragment();
-        nickname = name;
         clientArray = clients;
         return fragment;
     }
@@ -42,10 +37,10 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            nickname = savedInstanceState.getString(MY_NAME);
-            clientArray = (String []) savedInstanceState.getSerializable(CLIENT_LIST);
-        }
+
+        if (savedInstanceState != null)
+            clientArray = (String []) savedInstanceState.getSerializable(SAVE_CLIENT);
+
         if (clientArray.length == 0)
             setEmptyText("Client list is empty");
         else
@@ -64,15 +59,21 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        listener = null;
-    }
-
-    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != listener) {
             listener.onClientSelected(mListView.getItemAtPosition(position).toString());
+        }
+    }
+
+    public void setClients (String [] newClientArray) {
+        clientArray = newClientArray;
+        if (clientArray.length == 0)
+            setEmptyText("Client list is empty");
+        else {
+            View curView = getView();
+            if (curView != null)
+                if (curView.findViewById(android.R.id.list) != null)
+                    recreateAdapter();
         }
     }
 
@@ -80,8 +81,21 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
         ((ClientActivity)getActivity()).showMessage((String) emptyText);
     }
 
+    private void recreateAdapter () {
+        clientAdapter = new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
+        mListView.setAdapter(clientAdapter);
+        mListView.setOnItemClickListener(this);
+    }
+
     public interface OnItemSelectedListener {
         public void onClientSelected(String nickname);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable(SAVE_CLIENT, clientArray);
     }
 
     @Override
@@ -95,29 +109,9 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
         }
     }
 
-    private void recreateAdapter () {
-        clientAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, clientArray);
-        mListView.setAdapter(clientAdapter);
-        mListView.setOnItemClickListener(this);
-    }
-
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putSerializable(CLIENT_LIST, clientArray);
-        outState.putString(MY_NAME, nickname);
-    }
-
-    public void setClients (String [] newClientArray) {
-        clientArray = newClientArray;
-        if (clientArray.length == 0)
-            setEmptyText("Client list is empty");
-        else {
-            View curView = getView();
-            if (curView != null)
-                if (curView.findViewById(android.R.id.list) != null)
-                    recreateAdapter();
-        }
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
     }
 }
