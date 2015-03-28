@@ -156,6 +156,10 @@ public class ConnectService extends Service {
                 break;
             case ClientActivity.EVENT_MSG:
                 i.putExtra(ClientActivity.INFO, message).putExtra(ClientActivity.EVENT, ClientActivity.EVENT_MSG);
+                break;
+            case ClientActivity.EVENT_CLOSE:
+                i.putExtra(ClientActivity.INFO, "Socket has been closed").putExtra(ClientActivity.EVENT, ClientActivity.EVENT_CLOSE);
+                break;
         }
         this.sendBroadcast(i);
     }

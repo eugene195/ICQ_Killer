@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by eugene on 13.03.15.
  */
-public class Message implements BaseEntity {
+public class Message implements BaseEntity, Serializable {
     private String text;
     private String from;
     private String to;

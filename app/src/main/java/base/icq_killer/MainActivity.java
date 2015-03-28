@@ -64,7 +64,7 @@ public class MainActivity extends ActionBarActivity {
             parameters.put(Configuration.Login.ClientToServer.nickname, username);
             try {
                 JSONObject json = protocol.create(user.create(parameters));
-                if (json.getString(Configuration.Login.ServerToClient.status).
+                if ((json != null) && (json.getString(Configuration.Login.ServerToClient.status)).
                         equals(Configuration.Login.ServerToClient.OK))
                 {
                     user.setClients(json.getJSONArray(Configuration.Login.ServerToClient.clients));

@@ -40,6 +40,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     public static final String EVENT = "event";
     public static final String EVENT_OPEN = "open";
     public static final String EVENT_MSG = "message";
+    public static final String EVENT_CLOSE = "close";
     public static final String INFO = "info";
 
     public static final int ORIENTATION_PORTRAIT = 1;
@@ -94,6 +95,9 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
                         break;
                     case EVENT_MSG:
                         messageReceived(info);
+                        break;
+                    case EVENT_CLOSE:
+                        showMessage("Sorry, Your socket was closed");
                         break;
                 }
             }
