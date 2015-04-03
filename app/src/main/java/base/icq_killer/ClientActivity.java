@@ -1,5 +1,7 @@
 package base.icq_killer;
 
+import android.app.Activity;
+import android.app.DownloadManager;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
@@ -8,12 +10,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,6 +33,7 @@ import base.icq_killer.fragments.ChatFragment;
 import base.icq_killer.fragments.ClientListFragment;
 import entities.Message;
 import entities.Sendable;
+import utils.configuration.ConfigLoader;
 import utils.configuration.Configuration;
 
 
@@ -47,10 +52,13 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     public static final int ORIENTATION_LANDSCAPE = 2;
     private int orientation = ORIENTATION_PORTRAIT;
 
+    private final int AGREE_REQUEST = 1;
+
     private ClientListFragment clf;
     private ChatFragment ctf;
     private String myName;
     private String [] clientArray;
+    private byte [] simKey;
 
     private ConnectService mBoundService;
     private BroadcastReceiver mReceiver;
@@ -120,6 +128,8 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
                 if ((!in.equals("")) && (!findClient(in)))
                     clientArray = addClient(clientArray, in);
                 clf.setClients(clientArray);
+                if (clientArray.length == 0)
+                    showMessage("Client list is empty");
             }
             else if (action.equals(Configuration.SocketAction.Message.action)) {
                 Message msg = new Message();
@@ -128,17 +138,38 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
                 msgParams.put(Configuration.SocketAction.Message.ServerToClient.to, myName);
                 msgParams.put(Configuration.SocketAction.Message.ServerToClient.message, data.get(Configuration.SocketAction.Message.ServerToClient.message));
                 msg.create(msgParams);
-                ctf.receiveMsg(msg);
+                if (! ctf.receiveMsg(msg))
+                    showMessage(getResources().getString(R.string.wrong_abonent) + " " + msg.getFrom());
             }
             else if (action.equals(Configuration.SocketAction.GoOut.action)) {
                 String out = data.getString(Configuration.SocketAction.GoOut.ServerToClient.nickname);
                 if (findClient(out))
                     clientArray = removeClient(clientArray, out);
                 clf.setClients(clientArray);
+                if (clientArray.length == 0)
+                    showMessage("Client list is empty");
+            }
+            else if (action.equals(Configuration.SocketAction.Download.action)) {
+                Message msg = new Message();
+                HashMap<String, Object> msgParams = new HashMap<>();
+                msgParams.put(Configuration.SocketAction.Download.ServerToClient.from, data.get(Configuration.SocketAction.Download.ServerToClient.from));
+                msgParams.put(Configuration.SocketAction.Message.ServerToClient.to, myName);
+                msgParams.put(Configuration.SocketAction.Message.ServerToClient.message, data.get(Configuration.SocketAction.Download.ServerToClient.url));
+                msg.create(msgParams);
+                ctf.receiveMsg(msg);
+                startDownload(msg.getText());
+            }
+            else if (action.equals(Configuration.SocketAction.EncryptStart.action)) {
+                simKey = data.get(Configuration.SocketAction.EncryptStart.ServerToClient.simKey).toString().getBytes();
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void startDownload (String url) {
+        Intent intent = new Intent(getApplicationContext(), DownloadDialog.class).putExtra("url", url);
+        startActivityForResult(intent, AGREE_REQUEST);
     }
 
     private boolean findClient (String client) {
@@ -165,9 +196,28 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     public void send (Sendable object) {
         try {
-            mBoundService.send(object);
-        } catch (JSONException | IOException e) {
-            e.printStackTrace();
+            ArrayList<BasicNameValuePair> parameters = object.getParams();
+            JSONObject message = new JSONObject();
+            message.put(Configuration.SocketAction.action, Configuration.SocketAction.Message.action);
+            switch (Configuration.PROTOCOL) {
+                case "REST":
+                    JSONObject data = new JSONObject();
+                    for (BasicNameValuePair pair : parameters)
+                        data.put(pair.getName(), pair.getValue());
+                    message.put(Configuration.SocketAction.data, data.toString());
+                    break;
+                case "SOAP":
+                    String result = "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Body>";
+                    for (BasicNameValuePair pair : parameters)
+                        result += "<" + pair.getName() + ">" + pair.getValue() + "</" + pair.getName() + ">";
+                    result += "</soap:Body></soap:Envelope>";
+                    message.put(Configuration.SocketAction.data, result);
+                    break;
+            }
+            mBoundService.send(message);
+        }
+        catch (JSONException | IOException exc) {
+            exc.printStackTrace();
         }
     }
 
@@ -234,6 +284,29 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
     private void doBindService() {
         bindService(new Intent(ClientActivity.this,
                 ConnectService.class), mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == AGREE_REQUEST) {
+            if (resultCode == Activity.RESULT_OK) {
+                String answer = data.getStringExtra("answer");
+                if (answer.equals("Yes")) {
+                    showMessage("Starting download");
+                    String url = data.getStringExtra("url");
+                    String servicestring = Context.DOWNLOAD_SERVICE;
+                    DownloadManager downloadmanager;
+                    downloadmanager = (DownloadManager) getSystemService(servicestring);
+                    Uri uri = Uri
+                            .parse(url);
+                    DownloadManager.Request request = new DownloadManager.Request(uri);
+                    Long reference = downloadmanager.enqueue(request);
+                }
+                else {
+                    showMessage("You canceled this download");
+                }
+            }
+        }
     }
 
     private void doUnbindService() {

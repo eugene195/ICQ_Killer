@@ -13,6 +13,7 @@ public class Configuration {
     public static String HTTP_SERVER_URL = "http://immense-bayou-7299.herokuapp.com";
     public static String WS_SERVER_URL = "ws://immense-bayou-7299.herokuapp.com/message/create";
     public static String LOG_FILENAME = "/Download/logs1.txt";
+    public static String PROTOCOL = "REST";
     public static class Login {
 //        Default value
         public static String URL = "/user/create";
@@ -58,11 +59,28 @@ public class Configuration {
             }
         }
 
+        public static class Download {
+            public static String action = "download";
+
+            public static class ServerToClient {
+                public static String from = "from";
+                public static String url = "url";
+            }
+        }
+
         public static class GoOut {
             public static String action = "user_went_out";
 
             public static class ServerToClient {
                 public static String nickname = "nickname";
+            }
+        }
+
+        public static class EncryptStart {
+            public static String action = "encrypt_start";
+
+            public static class ServerToClient {
+                public static String simKey = "simKey";
             }
         }
     }

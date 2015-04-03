@@ -26,10 +26,16 @@
     <string name="file_upload_success">File uploaded</string>
     <string name="file_upload_error">File upload error</string>
 
+    <!--CLIENT FRAGMENT-->
+    <string name="refresh_btn_text">Refresh</string>
+
     <!-- CONFIGS -->
     <string name="protocol">REST</string>
     <string name="strategy">Settings</string>
     <string name="log_filename">/Download/logs.txt</string>
     <string name="title_activity_log_view">LogViewActivity</string>
+    <string name="title_activity_download_dialog">DownloadDialog</string>
+
+    <string name="downloadQuestion">Would you like to download a file?</string>
 
 </resources>

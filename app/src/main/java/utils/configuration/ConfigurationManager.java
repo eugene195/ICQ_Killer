@@ -17,7 +17,7 @@ public class ConfigurationManager {
         if (protocol.equals("REST")) {
             configureByREST();
         }
-        configureBySOAP();
+        configureByREST();
     }
 
     private static void configureByREST() {
@@ -26,6 +26,6 @@ public class ConfigurationManager {
     }
 
     private static void configureBySOAP() {
-
+        Configuration.PROTOCOL = "SOAP";
     }
 }

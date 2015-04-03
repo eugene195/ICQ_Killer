@@ -68,7 +68,6 @@ public class ChatFragment extends Fragment {
         }
         recreateAdapter();
 
-        msgBox = (EditText) getView().findViewById(R.id.messageBox);
         Button sendBtn = (Button) getView().findViewById(R.id.sendButton);
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,6 +87,7 @@ public class ChatFragment extends Fragment {
             }
         });
 
+        msgBox = (EditText) getView().findViewById(R.id.messageBox);
         msgBox.setOnKeyListener(new View.OnKeyListener() {
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
@@ -119,13 +119,15 @@ public class ChatFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_chat, container, false);
     }
 
-    public void receiveMsg (Message message) {
+    public boolean receiveMsg (Message message) {
         if (message.getFrom().equals(destName)) {
             msgList.add(message);
             recreateAdapter();
+            return true;
         }
         else
-            ((ClientActivity) getActivity()).showMessage(getResources().getString(R.string.wrong_abonent) + " " + message.getFrom());
+            return false;
+//            ((ClientActivity) getActivity()).showMessage(getResources().getString(R.string.wrong_abonent) + " " + message.getFrom());
     }
 
     public void setNames(String my, String dest) {

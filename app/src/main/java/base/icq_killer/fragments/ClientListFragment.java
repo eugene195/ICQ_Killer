@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListAdapter;
 
 import base.icq_killer.ClientActivity;
@@ -49,12 +50,25 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
     }
 
     @Override
+    public void onActivityCreated (Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        Button refreshBtn = (Button) getView().findViewById(R.id.refreshBtn);
+        refreshBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                recreateAdapter();
+            }
+        });
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item, container, false);
         mListView = (AbsListView) view.findViewById(android.R.id.list);
         mListView.setAdapter(clientAdapter);
         mListView.setOnItemClickListener(this);
+        recreateAdapter();
         return view;
     }
 
@@ -67,14 +81,6 @@ public class ClientListFragment extends Fragment implements AbsListView.OnItemCl
 
     public void setClients (String [] newClientArray) {
         clientArray = newClientArray;
-        if (clientArray.length == 0)
-            setEmptyText("Client list is empty");
-        else {
-            View curView = getView();
-            if (curView != null)
-                if (curView.findViewById(android.R.id.list) != null)
-                    recreateAdapter();
-        }
     }
 
     public void setEmptyText(CharSequence emptyText) {

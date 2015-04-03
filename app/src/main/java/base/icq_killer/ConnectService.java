@@ -66,14 +66,9 @@ public class ConnectService extends Service {
         return START_STICKY;
     }
 
-    public void send (Sendable object) throws JSONException, IOException {
+    public void send (JSONObject object) throws JSONException, IOException {
         if (client.isSuccess()) {
-            JSONObject message = new JSONObject(), data = new JSONObject();
-            ArrayList<BasicNameValuePair> parameters = object.getParams();
-            for (BasicNameValuePair pair : parameters)
-                data.put(pair.getName(), pair.getValue());
-            message.put(Configuration.SocketAction.action, Configuration.SocketAction.Message.action).put(Configuration.SocketAction.data, data);
-            new SendWs().execute(message.toString());
+            new SendWs().execute(object.toString());
         }
     }
 
@@ -128,7 +123,7 @@ public class ConnectService extends Service {
 
         public void connect() {
             try {
-                connection = client.open(new URI(wsUrl + "?" + Configuration.SocketAction.connparameter + "=" + myName), new WebSocket.OnTextMessage() {
+                connection = client.open(new URI(wsUrl + "?" + Configuration.SocketAction.connparameter + "=" + myName + "&client=MOBILE"), new WebSocket.OnTextMessage() {
                     public void onOpen(Connection connection) {
                         successConn = true;
                         socketAction(ClientActivity.EVENT_OPEN, "");
