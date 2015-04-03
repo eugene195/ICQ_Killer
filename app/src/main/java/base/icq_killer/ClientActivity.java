@@ -17,7 +17,6 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,7 +32,8 @@ import base.icq_killer.fragments.ChatFragment;
 import base.icq_killer.fragments.ClientListFragment;
 import entities.Message;
 import entities.Sendable;
-import utils.configuration.ConfigLoader;
+import utils.ArrayHandler;
+import utils.SocketMessageHandler;
 import utils.configuration.Configuration;
 
 
@@ -119,49 +119,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     private void messageReceived (String message) {
         try {
-            JSONObject json = new JSONObject(message);
-            String action = json.getString(Configuration.SocketAction.action);
-            JSONObject data = (JSONObject) json.get(Configuration.SocketAction.data);
-
-            if (action.equals(Configuration.SocketAction.ComeIn.action)) {
-                String in = data.getString(Configuration.SocketAction.ComeIn.ServerToClient.nickname);
-                if ((!in.equals("")) && (!findClient(in)))
-                    clientArray = addClient(clientArray, in);
-                clf.setClients(clientArray);
-                if (clientArray.length == 0)
-                    showMessage("Client list is empty");
-            }
-            else if (action.equals(Configuration.SocketAction.Message.action)) {
-                Message msg = new Message();
-                HashMap<String, Object> msgParams = new HashMap<>();
-                msgParams.put(Configuration.SocketAction.Message.ServerToClient.from, data.get(Configuration.SocketAction.Message.ServerToClient.from));
-                msgParams.put(Configuration.SocketAction.Message.ServerToClient.to, myName);
-                msgParams.put(Configuration.SocketAction.Message.ServerToClient.message, data.get(Configuration.SocketAction.Message.ServerToClient.message));
-                msg.create(msgParams);
-                if (! ctf.receiveMsg(msg))
-                    showMessage(getResources().getString(R.string.wrong_abonent) + " " + msg.getFrom());
-            }
-            else if (action.equals(Configuration.SocketAction.GoOut.action)) {
-                String out = data.getString(Configuration.SocketAction.GoOut.ServerToClient.nickname);
-                if (findClient(out))
-                    clientArray = removeClient(clientArray, out);
-                clf.setClients(clientArray);
-                if (clientArray.length == 0)
-                    showMessage("Client list is empty");
-            }
-            else if (action.equals(Configuration.SocketAction.Download.action)) {
-                Message msg = new Message();
-                HashMap<String, Object> msgParams = new HashMap<>();
-                msgParams.put(Configuration.SocketAction.Download.ServerToClient.from, data.get(Configuration.SocketAction.Download.ServerToClient.from));
-                msgParams.put(Configuration.SocketAction.Message.ServerToClient.to, myName);
-                msgParams.put(Configuration.SocketAction.Message.ServerToClient.message, data.get(Configuration.SocketAction.Download.ServerToClient.url));
-                msg.create(msgParams);
-                ctf.receiveMsg(msg);
-                startDownload(msg.getText());
-            }
-            else if (action.equals(Configuration.SocketAction.EncryptStart.action)) {
-                simKey = data.get(Configuration.SocketAction.EncryptStart.ServerToClient.simKey).toString().getBytes();
-            }
+            SocketMessageHandler.handleIn(message, this);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -172,49 +130,10 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
         startActivityForResult(intent, AGREE_REQUEST);
     }
 
-    private boolean findClient (String client) {
-        for (String aClientArray : clientArray)
-            if (aClientArray.equals(client))
-                return true;
-        return false;
-    }
-
-    private String[] removeClient(String[] input, String deleteMe) {
-        List <String> result = new LinkedList<>();
-        for(String item : input)
-            if(!deleteMe.equals(item))
-                result.add(item);
-        return result.toArray(input);
-    }
-
-    private String[] addClient(String[] input, String addMe) {
-        List <String> result = new LinkedList<>();
-        Collections.addAll(result, input);
-        result.add(addMe);
-        return result.toArray(input);
-    }
 
     public void send (Sendable object) {
         try {
-            ArrayList<BasicNameValuePair> parameters = object.getParams();
-            JSONObject message = new JSONObject();
-            message.put(Configuration.SocketAction.action, Configuration.SocketAction.Message.action);
-            switch (Configuration.PROTOCOL) {
-                case "REST":
-                    JSONObject data = new JSONObject();
-                    for (BasicNameValuePair pair : parameters)
-                        data.put(pair.getName(), pair.getValue());
-                    message.put(Configuration.SocketAction.data, data.toString());
-                    break;
-                case "SOAP":
-                    String result = "<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Body>";
-                    for (BasicNameValuePair pair : parameters)
-                        result += "<" + pair.getName() + ">" + pair.getValue() + "</" + pair.getName() + ">";
-                    result += "</soap:Body></soap:Envelope>";
-                    message.put(Configuration.SocketAction.data, result);
-                    break;
-            }
-            mBoundService.send(message);
+            mBoundService.send(SocketMessageHandler.handleOut(object));
         }
         catch (JSONException | IOException exc) {
             exc.printStackTrace();
@@ -311,5 +230,52 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     private void doUnbindService() {
         unbindService(mConnection);
+    }
+
+
+    public void handleJSON(String action, JSONObject data) throws JSONException {
+        if (action.equals(Configuration.SocketAction.ComeIn.action)) {
+            String in = data.getString(Configuration.SocketAction.ComeIn.ServerToClient.nickname);
+            if ((!in.equals("")) && (!ArrayHandler.findInArray(in, clientArray)))
+                clientArray = ArrayHandler.addToArray(clientArray, in);
+            clf.setClients(clientArray);
+            if (clientArray.length == 0)
+                showMessage("Client list is empty");
+        }
+        else if (action.equals(Configuration.SocketAction.Message.action)) {
+            Message msg = new Message();
+            HashMap<String, Object> msgParams = new HashMap<>();
+            msgParams.put(Configuration.SocketAction.Message.ServerToClient.from, data.get(Configuration.SocketAction.Message.ServerToClient.from));
+            msgParams.put(Configuration.SocketAction.Message.ServerToClient.to, myName);
+            msgParams.put(Configuration.SocketAction.Message.ServerToClient.message, data.get(Configuration.SocketAction.Message.ServerToClient.message));
+            msg.create(msgParams);
+            if (! ctf.receiveMsg(msg))
+                showMessage(getResources().getString(R.string.wrong_abonent) + " " + msg.getFrom());
+        }
+        else if (action.equals(Configuration.SocketAction.GoOut.action)) {
+            String out = data.getString(Configuration.SocketAction.GoOut.ServerToClient.nickname);
+            if (ArrayHandler.findInArray(out, clientArray))
+                clientArray = ArrayHandler.removeFromArray(clientArray, out);
+            clf.setClients(clientArray);
+            if (clientArray.length == 0)
+                showMessage("Client list is empty");
+        }
+        else if (action.equals(Configuration.SocketAction.Download.action)) {
+            Message msg = new Message();
+            HashMap<String, Object> msgParams = new HashMap<>();
+            msgParams.put(Configuration.SocketAction.Download.ServerToClient.from, data.get(Configuration.SocketAction.Download.ServerToClient.from));
+            msgParams.put(Configuration.SocketAction.Message.ServerToClient.to, myName);
+            msgParams.put(Configuration.SocketAction.Message.ServerToClient.message, data.get(Configuration.SocketAction.Download.ServerToClient.url));
+            msg.create(msgParams);
+            ctf.receiveMsg(msg);
+            startDownload(msg.getText());
+        }
+        else if (action.equals(Configuration.SocketAction.EncryptStart.action)) {
+            simKey = data.get(Configuration.SocketAction.EncryptStart.ServerToClient.simKey).toString().getBytes();
+        }
+    }
+
+    public void handleXML (String message) {
+
     }
 }

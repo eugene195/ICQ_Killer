@@ -66,9 +66,9 @@ public class ConnectService extends Service {
         return START_STICKY;
     }
 
-    public void send (JSONObject object) throws JSONException, IOException {
+    public void send (String object) throws JSONException, IOException {
         if (client.isSuccess()) {
-            new SendWs().execute(object.toString());
+            new SendWs().execute(object);
         }
     }
 
@@ -87,6 +87,7 @@ public class ConnectService extends Service {
         public SendWs() {}
         protected String doInBackground(String ... urls) {
             String strToSend = urls[0];
+            Log.i(SERVICE_TYPE, strToSend);
             try {
                 client.sendMessage(strToSend);
             } catch (IOException e) {
