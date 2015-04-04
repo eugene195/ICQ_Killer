@@ -1,6 +1,8 @@
 package utils.configuration;
 
 
+import android.os.Environment;
+
 import base.icq_killer.loggers.ImmediateLogger;
 import base.icq_killer.loggers.LazyLogger;
 import base.icq_killer.loggers.Logger;
@@ -18,7 +20,7 @@ public class Configuration {
     public static class Encrypt {
         public static String asin_realisation = "first";
         public static String sin_realisation = "second";
-        public static String working_directory = "/";
+        public static String working_directory = String.valueOf(Environment.getExternalStorageDirectory());
     }
     public static class Login {
 //        Default value
