@@ -28,6 +28,7 @@
 
     <!--CLIENT FRAGMENT-->
     <string name="refresh_btn_text">Refresh</string>
+    <string name="empty_client_list">Client list is empty</string>
 
     <!-- CONFIGS -->
     <string name="protocol">REST</string>

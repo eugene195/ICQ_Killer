@@ -1,5 +1,6 @@
 package utils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,11 +18,14 @@ public class ArrayHandler {
     }
 
     public static String[] removeFromArray(String[] input, String deleteMe) {
-        List<String> result = new LinkedList<>();
+        List<String> result = new ArrayList<>();
         for(String item : input)
             if(!deleteMe.equals(item))
                 result.add(item);
-        return result.toArray(input);
+        String [] arr = new String[result.size()];
+        for (int i = 0; i < result.size(); i++)
+            arr[i] = result.get(i);
+        return arr;
     }
 
     public static String[] addToArray(String[] input, String addMe) {

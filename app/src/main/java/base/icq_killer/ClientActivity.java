@@ -238,7 +238,7 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
                 clientArray = ArrayHandler.addToArray(clientArray, in);
             clf.setClients(clientArray);
             if (clientArray.length == 0)
-                showMessage("Client list is empty");
+                showMessage(getResources().getString(R.string.empty_client_list));
         }
         else if (action.equals(Configuration.SocketAction.Message.action)) {
             Message msg = new Message();
