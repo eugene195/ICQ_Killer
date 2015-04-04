@@ -10,6 +10,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -134,11 +135,9 @@ public class FileDialog {
                 }
             };
             String[] fileList1 = path.list(filter);
-            for (String file : fileList1) {
-                r.add(file);
-            }
+            Collections.addAll(r, fileList1);
         }
-        fileList = (String[]) r.toArray(new String[]{});
+        fileList = r.toArray(new String[r.size()]);
     }
 
     private File getChosenFile(String fileChosen) {
@@ -147,7 +146,7 @@ public class FileDialog {
     }
 
     public void setFileEndsWith(String fileEndsWith) {
-        this.fileEndsWith = fileEndsWith != null ? fileEndsWith.toLowerCase() : fileEndsWith;
+        this.fileEndsWith = fileEndsWith != null ? fileEndsWith.toLowerCase() : null;
     }
 }
 

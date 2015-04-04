@@ -214,10 +214,8 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
                     showMessage("Starting download");
                     String url = data.getStringExtra("url");
                     String servicestring = Context.DOWNLOAD_SERVICE;
-                    DownloadManager downloadmanager;
-                    downloadmanager = (DownloadManager) getSystemService(servicestring);
-                    Uri uri = Uri
-                            .parse(url);
+                    DownloadManager downloadmanager = (DownloadManager) getSystemService(servicestring);
+                    Uri uri = Uri.parse(url);
                     DownloadManager.Request request = new DownloadManager.Request(uri);
                     Long reference = downloadmanager.enqueue(request);
                 }

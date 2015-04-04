@@ -127,8 +127,9 @@ public class ChatFragment extends Fragment {
         }
         else
             return false;
-//            ((ClientActivity) getActivity()).showMessage(getResources().getString(R.string.wrong_abonent) + " " + message.getFrom());
     }
+
+
 
     public void setNames(String my, String dest) {
             myName = my;

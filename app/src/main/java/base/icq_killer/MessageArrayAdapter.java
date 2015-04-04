@@ -3,6 +3,8 @@ package base.icq_killer;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,6 +54,7 @@ public class MessageArrayAdapter extends ArrayAdapter<Message> {
         Message message = getItem(position);
         TextView messageView = (TextView) row.findViewById(R.id.message);
         messageView.setText(message.getText());
+        Linkify.addLinks(messageView, Linkify.WEB_URLS);
         boolean isMine = message.getFrom().equals(myName);
         messageView.setBackgroundResource(isMine ? R.drawable.bubble_yellow : R.drawable.bubble_green);
         wrapper.setGravity(isMine ? Gravity.START : Gravity.END);
