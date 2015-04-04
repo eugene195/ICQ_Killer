@@ -22,12 +22,20 @@ import org.json.JSONObject;
 
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import Crypto.Asimmetric.AsimCrypto;
+import Crypto.CryptoFactory;
+import Crypto.NoSuchCryptoRealisationException;
+import Crypto.Simmetric.AbstractKey;
+import Crypto.Simmetric.IncompatibleKeyException;
+import Crypto.Simmetric.SimCrypto;
 import base.icq_killer.fragments.ChatFragment;
 import base.icq_killer.fragments.ClientListFragment;
 import entities.Message;
@@ -62,6 +70,9 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     private ConnectService mBoundService;
     private BroadcastReceiver mReceiver;
+    private AsimCrypto asimCrypto;
+    private SimCrypto simCrypto;
+    private static String encrypt = Configuration.ENCRYPTION;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +95,43 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
         serviceConnect();
     }
 
+    private void prepareCrypto () {
+        try {
+            this.asimCrypto = CryptoFactory.getAsimInstance(Configuration.Encrypt.asin_realisation);
+            this.simCrypto = CryptoFactory.getSimInstance(Configuration.Encrypt.sin_realisation);
+            this.simCrypto.setWorkingDir(Configuration.Encrypt.working_directory);
+            this.simCrypto.setKey(AbstractKey.fromBytes(simKey));
+        } catch (NoSuchCryptoRealisationException | IncompatibleKeyException e) {
+            e.printStackTrace();
+            encrypt = "disabled";
+        }
+    }
+
+    private String decrypt (String msg) {
+        String str = msg;
+        if (encrypt.equals("enabled")) {
+            byte [] binaryData = msg.getBytes();
+            byte [] decryptedData = simCrypto.decrypt(binaryData);
+            try {
+                str = new String(decryptedData, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return str;
+    }
+
+    private String encrypt (String msg) {
+        String str = msg;
+        if (encrypt.equals("enabled")) {
+            byte [] binaryData = msg.getBytes();
+            byte [] encryptedData = simCrypto.encrypt(binaryData);
+            ByteBuffer buffer = ByteBuffer.wrap(encryptedData);
+            str = String.valueOf(buffer);
+        }
+        return str;
+    }
+
     private void serviceConnect () {
         Intent intent = new Intent(this, ConnectService.class);
         intent.putExtra(ConnectService.NICKNAME, myName);
@@ -96,8 +144,8 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
             public void onReceive(Context context, Intent intent) {
                 String info = intent.getStringExtra(INFO);
                 String event = intent.getStringExtra(EVENT);
+                info = decrypt(info);
                 Log.i(ConnectService.SERVICE_TYPE, event + " = " + info);
-
                 switch (event) {
                     case EVENT_OPEN:
                         break;
@@ -133,7 +181,9 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
 
     public void send (Sendable object) {
         try {
-            mBoundService.send(SocketMessageHandler.handleOut(object));
+            String message = SocketMessageHandler.handleOut(object);
+            message = encrypt(message);
+            mBoundService.send(message);
         }
         catch (JSONException | IOException exc) {
             exc.printStackTrace();
@@ -270,10 +320,11 @@ public class ClientActivity extends FragmentActivity implements ClientListFragme
         }
         else if (action.equals(Configuration.SocketAction.EncryptStart.action)) {
             simKey = data.get(Configuration.SocketAction.EncryptStart.ServerToClient.simKey).toString().getBytes();
+            prepareCrypto();
         }
     }
 
     public void handleXML (String message) {
-
+//        Yes, we handle
     }
 }

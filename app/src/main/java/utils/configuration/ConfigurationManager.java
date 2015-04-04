@@ -10,6 +10,7 @@ public class ConfigurationManager {
     public static void configure (Resources resources) {
         ConfigLoader config = ConfigLoader.getInstance(resources);
         String protocol = config.getString("protocol");
+        Configuration.ENCRYPTION = config.getString("encryption_flag");
 
         if (protocol.equals("SOAP")) {
             configureBySOAP();

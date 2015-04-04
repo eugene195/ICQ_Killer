@@ -14,6 +14,12 @@ public class Configuration {
     public static String WS_SERVER_URL = "ws://immense-bayou-7299.herokuapp.com/message/create";
     public static String LOG_FILENAME = "/Download/logs1.txt";
     public static String PROTOCOL = "REST";
+    public static String ENCRYPTION = "enabled";
+    public static class Encrypt {
+        public static String asin_realisation = "first";
+        public static String sin_realisation = "second";
+        public static String working_directory = "/";
+    }
     public static class Login {
 //        Default value
         public static String URL = "/user/create";

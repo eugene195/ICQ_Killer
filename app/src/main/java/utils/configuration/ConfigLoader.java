@@ -34,6 +34,7 @@ public class ConfigLoader {
     private ConfigLoader() {
         sections.put("protocol", resources.getString(R.string.protocol));
         sections.put("log_filename", resources.getString(R.string.log_filename));
+        sections.put("encryption_flag", resources.getString(R.string.encryption_flag));
     }
 
     public String getString (String key) {

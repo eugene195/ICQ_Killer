@@ -32,6 +32,8 @@
 
     <!-- CONFIGS -->
     <string name="protocol">REST</string>
+    <string name="encryption_flag">disabled</string>
+
     <string name="strategy">Settings</string>
     <string name="log_filename">/Download/logs.txt</string>
     <string name="title_activity_log_view">LogViewActivity</string>
