@@ -24,8 +24,6 @@ public class LogViewActivity extends Activity {
         String log = Configuration.logger.getLog().toString();
         TextView logs = (TextView)findViewById(R.id.log);
         logs.append(log);
-//        Intent intent = new Intent(getApplicationContext(), FileSelectActivity.class);
-//        startActivityForResult(intent, PICK_FILE_REQUEST);
     }
 
     @Override
